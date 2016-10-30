@@ -84,23 +84,24 @@ class mi_albaran_impresion extends fs_controller
          else
             $this->generar_pdf_albaran();
       }
-      else if( isset($_REQUEST['factura']) AND isset($_REQUEST['id']) )
+      else if( isset($_REQUEST['albaran_noval']) AND isset($_REQUEST['id']) )
       {
-         $fac = new factura_cliente();
-         $this->factura = $fac->get($_REQUEST['id']);
-         if($this->factura)
+         $alb = new albaran_cliente();
+         $this->albaran = $alb->get($_REQUEST['id']);
+         if($this->albaran)
          {
             $cliente = new cliente();
-            $this->cliente = $cliente->get($this->factura->codcliente);
+            $this->cliente = $cliente->get($this->albaran->codcliente);
          }
          
          if( isset($_POST['email']) )
          {
-            $this->enviar_email('factura', $_REQUEST['tipo']);
+            $this->enviar_email('albaran');
          }
          else
-            $this->generar_pdf_factura($_REQUEST['tipo']);
+            $this->generar_pdf_albaran_no_valorado();
       }
+
       
       $this->share_extensions();
    }
@@ -122,7 +123,7 @@ class mi_albaran_impresion extends fs_controller
               'page_to' => 'ventas_albaran',
               'type' => 'pdf',
               'text' => 'Imprimir ALBARAN no valorado',
-              'params' => '&albaran=TRUE&noval=TRUE'
+              'params' => '&albaran_noval=TRUE'
           ),
           array(
               'name' => 'email_albaran',
@@ -820,22 +821,22 @@ class mi_albaran_impresion extends fs_controller
             $i++;
             $imp = $this->impuesto->get($li['codimpuesto']);
             $filaiva[$i][0] = $li['codimpuesto'];
-            $etemp = round($li['neto'],2);
+            $etemp = round(0.00,2);
             $filaiva[$i][1] = ($etemp) ? $this->ckeckEuro($etemp) : '';
             $totaliva = $totaliva + $etemp; 
             $filaiva[$i][2] = $li['iva']. "%";
-            $etemp = round($li['totaliva'],2);
+            $etemp = round(0.00,2);
             $filaiva[$i][3] = ($etemp) ? $this->ckeckEuro($etemp) : '';
             $totaliva = $totaliva + $etemp;
             $filaiva[$i][4] = $li['recargo']. "%";
-            $etemp = round($li['totalrecargo'],2);
+            $etemp = round(0.00,2);
             //if ($etemp =="0"){ $filaiva[$i][5] = ("000") ? $this->ckeckEuro("000") : '';}
             //else { $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : ''; }
             $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : '';
             $totaliva = $totaliva + $etemp;
             $filaiva[$i][6] = ''; //// POR CREARRRRRR
             $filaiva[$i][7] = ''; //// POR CREARRRRRR
-            $etemp = round($li['totallinea'],2);
+            $etemp = round(0.00,2);
             $filaiva[$i][8] = ($etemp) ? $this->ckeckEuro($etemp) : ''; 
             $totaliva = $totaliva + $etemp;
          }
@@ -843,7 +844,7 @@ class mi_albaran_impresion extends fs_controller
          if($filaiva)
          {
             $filaiva[1][6] = $this->albaran->irpf.' %';
-            $etemp = round($this->albaran->totalirpf,2);
+            $etemp = round(0.00,2);
             $totaliva = $totaliva - $etemp;
             $filaiva[1][7] = ($etemp) ? $this->ckeckEuro($etemp) : '';
          }
@@ -852,7 +853,7 @@ class mi_albaran_impresion extends fs_controller
       }
       
       // Total factura numerico
-      $etemp = round($this->albaran->total,2);
+      $etemp = round(0.00,2);
       $pdf_doc->fdf_numtotal = $this->ckeckEuro($etemp);
 
       // Total factura numeros a texto
@@ -887,20 +888,20 @@ class mi_albaran_impresion extends fs_controller
                     '0' => "\n" . $lineas[$i]->referencia,
                     '1' => "Su pedido: " . $this->albaran->numero2 . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
                     '2' => "\n" . utf8_decode($lineas[$i]->cantidad),
-                    '3' => "\n" . $this->ckeckEuro($lineas[$i]->pvpunitario),
+                    '3' => "\n" . $this->ckeckEuro(0.00),
                     '4' => "\n" . utf8_decode($lineas[$i]->dtopor),
-                    '5' => "\n" . $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$lineas[$i]->dtopor/100)),
-                    '6' => "\n" . $this->ckeckEuro($lineas[$i]->pvptotal),
+                    '5' => "\n" . $this->ckeckEuro(0.00),
+                    '6' => "\n" . $this->ckeckEuro(0.00),
                     );
                 } else {
                     $lafila = array(
                     '0' => $lineas[$i]->referencia,
                     '1' => utf8_decode($lineas[$i]->descripcion) . $observa,
                     '2' => utf8_decode($lineas[$i]->cantidad),
-                    '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
+                    '3' => $this->ckeckEuro(0.00),
                     '4' => utf8_decode($lineas[$i]->dtopor),
-                    '5' => $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$lineas[$i]->dtopor/100)),
-                    '6' => $this->ckeckEuro($lineas[$i]->pvptotal),
+                    '5' => $this->ckeckEuro(0.00),
+                    '6' => $this->ckeckEuro(0.00),
                     );
                 }
             

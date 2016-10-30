@@ -725,8 +725,17 @@ class PDF_MC_Table extends FPDF {
           $this->SetFont("Arial", "", 8);
           $this->SetXY($r1 + 3 , $y1 + 6);
         }
-        foreach ($mode as $lin)
-          $this->Cell($r2 - $r1 - 6, $salto, utf8_decode($lin), 0, 2, $just);
+        if (($this->fdf_tipodocumento != 'Albaran'))        
+        {
+            foreach ($mode as $lin){
+            $this->Cell($r2 - $r1 - 6, $salto, utf8_decode($lin), 0, 2, $just);}
+        
+        }
+        else
+        {
+            $this->Cell($r2 - $r1 - 6, $salto, utf8_decode($mode[0]), 0, 2, $just);
+        }
+            
     }
     // Divisa
     function addDivisa( $divisa )

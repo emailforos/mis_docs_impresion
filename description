@@ -1,0 +1,24 @@
+Plugin que personaliza el formato de impresión de: 
+<ul>
+<li> Presupuesto</li>
+<ul>
+<li> Asigna un código presupuesto según codificación 16-Numero - modificación presupuesto_cliente.php
+<ul>
+<li>En v.5 arreglada modificacion presupuesto_cliente.php personalizada en new_codigo para poder adjuntar documentos en pedidos.
+</ul>
+<li> Personaliza la impresión del presupuesto -mis_docs_pedidos.php- en base a incluyendo :
+<ul>
+<li> Datos completos de empresa y cliente.
+<li> Datos bancarios cliente
+<li> Campo de observaciones mejorado
+</ul>
+</ul>
+<li> Confirmación del pedido cliente.</li>
+<ul>
+<li> Se añade Fecha de salida del pedido
+<li> Se cambia el formato de columnas para incluir la referencia a parte y columna de neto.
+</ul>
+<li> Factura proforma en castellano e inglés
+<li> Pedido de compras en castellano e inglés.
+</ul>
+

@@ -2,23 +2,43 @@ Plugin que personaliza el formato de impresión de:
 <ul>
 <li> Presupuesto</li>
 <ul>
-<li> Asigna un código presupuesto según codificación 16-Numero - modificación presupuesto_cliente.php
-<ul>
-<li>En v.5 arreglada modificacion presupuesto_cliente.php personalizada en new_codigo para poder adjuntar documentos en pedidos.
+<li> Datos completos de empresa y cliente.
+<li> Añadida forma de pago
+<li> Añadida agencia
+<li> Añadido numero cliente
+<li> Campo de observaciones personalizado
 </ul>
-<li> Personaliza la impresión del presupuesto -mis_docs_pedidos.php- en base a incluyendo :
+<li> Confirmación de pedido</li>
 <ul>
 <li> Datos completos de empresa y cliente.
-<li> Datos bancarios cliente
-<li> Campo de observaciones mejorado
-</ul>
-</ul>
-<li> Confirmación del pedido cliente.</li>
-<ul>
-<li> Se añade Fecha de salida del pedido
-<li> Se cambia el formato de columnas para incluir la referencia a parte y columna de neto.
+<li> Añadida forma de pago
+<li> Añadida agencia
+<li> Añadido numero cliente
+<li> Campo de observaciones personalizado
 </ul>
 <li> Factura proforma en castellano e inglés
+<ul>
+<li> Datos completos de empresa y cliente.
+<li> Añadida forma de pago
+<li> Añadida agencia
+<li> Añadido numero cliente
+<li> Campo de observaciones personalizado
+</ul>
 <li> Pedido de compras en castellano e inglés.
+<ul>
+<li> Datos completos de empresa y proveedor.
+<li> Añadida forma de pago
+<li> Dejado preparado para cuando se pueda indicar agencia
+<li> Añadido numero proveedor
+<li> Campo de observaciones personalizado
+</ul>
+<li> Albaranes.
+<ul>
+<li> Datos completos de empresa y cliente.
+<li> Añadida forma de pago (sin datos bancarios por privacidad).
+<li> Añadida agencia
+<li> Añadido numero proveedor
+<li> Campo de observaciones personalizado
+</ul>
 </ul>
 

@@ -93,6 +93,23 @@ class mis_docs_impresion extends fs_controller
          else
             $this->generar_pdf_pedido_proveedor();
       }
+      else if( isset($_REQUEST['pedido_p_uk']) AND isset($_REQUEST['id']) )
+      {
+         $ped = new pedido_proveedor();
+         $this->pedido = $ped->get($_REQUEST['id']);
+         if($this->pedido)
+         {
+            $proveedor = new proveedor();
+            $this->proveedor = $proveedor->get($this->pedido->codproveedor);
+         }
+         
+         if( isset($_POST['email']) )
+         {
+            $this->enviar_email_proveedor();
+         }
+         else
+            $this->generar_pdf_pedido_proveedor_uk();
+      }
       else if( isset($_REQUEST['pedido']) AND isset($_REQUEST['id']) )
       {
          $ped = new pedido_cliente();
@@ -190,7 +207,7 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'compras_pedido',
               'type' => 'pdf',
-              'text' => 'Imprimir pedido',
+              'text' => 'Imprimir PEDIDO',
               'params' => '&pedido_p=TRUE'
           ),
           array(
@@ -198,7 +215,7 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'compras_pedido',
               'type' => 'pdf',
-              'text' => 'Imprimir pedido',
+              'text' => 'Imprimir PEDIDO en INGLES',
               'params' => '&pedido_p_uk=TRUE'
           ),
           array(
@@ -2639,7 +2656,7 @@ class mis_docs_impresion extends fs_controller
    {
 	$texto_pago = array();
         $fp0 = new forma_pago();
-        if( isset($_REQUEST['proforma']) OR isset($_REQUEST['proforma_uk']) OR isset($_REQUEST['pedido']) OR isset($_REQUEST['pedido_p'])){
+        if( isset($_REQUEST['proforma']) OR isset($_REQUEST['proforma_uk']) OR isset($_REQUEST['pedido']) OR isset($_REQUEST['pedido_p']) OR isset($_REQUEST['pedido_p_uk'])){
           $forma_pago = $fp0->get($this->pedido->codpago);
           if($forma_pago)
                     {

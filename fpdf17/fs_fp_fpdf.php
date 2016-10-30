@@ -731,7 +731,6 @@ class PDF_MC_Table extends FPDF {
         {
             foreach ($mode as $lin){
             $this->Cell($r2 - $r1 - 6, $salto, utf8_decode($lin), 0, 2, $just);}
-        
         }
         else
         {

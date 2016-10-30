@@ -662,6 +662,266 @@ class mi_albaran_impresion extends fs_controller
    
    }
    
+   private function generar_pdf_albaran_no_valorado($archivo = FALSE)
+   {
+      if(!$archivo)
+      {
+         /// desactivamos la plantilla HTML
+         $this->template = FALSE;
+      }
+      
+      /// Creamos el PDF y escribimos sus metadatos
+      ob_end_clean();
+      $pdf_doc = new PDF_MC_Table('P', 'mm', 'A4');
+      define('EEURO', chr(128));
+      $lineas = $this->albaran->get_lineas();
+
+      $pdf_doc->SetTitle('Albaran: '. $this->albaran->codigo);
+      $pdf_doc->SetSubject('Cliente: ' . $this->albaran->nombrecliente);
+      $pdf_doc->SetAuthor($this->empresa->nombre);
+      $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
+
+      $pdf_doc->Open();
+      $pdf_doc->AliasNbPages();
+      $pdf_doc->SetAutoPageBreak(true, 40);
+
+      // Definimos el color de relleno (gris, rojo, verde, azul)
+      $pdf_doc->SetColorRelleno('gris');
+         
+      /// Definimos todos los datos de la cabecera del presupuesto
+      /// Datos de la empresa
+      $pdf_doc->fde_nombre = $this->empresa->nombre;
+      $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
+      $pdf_doc->fde_cifnif = $this->empresa->cifnif;
+      $pdf_doc->fde_direccion = $this->empresa->direccion;
+      $pdf_doc->fde_codpostal = $this->empresa->codpostal;
+      $pdf_doc->fde_ciudad = $this->empresa->ciudad;
+      $pdf_doc->fde_provincia = $this->empresa->provincia;
+      $pdf_doc->fde_telefono = 'Teléfono: ' . $this->empresa->telefono;
+      $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
+      $pdf_doc->fde_email = $this->empresa->email;
+      $pdf_doc->fde_web = $this->empresa->web;
+      $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
+      
+      /// Insertamos el Logo y Marca de Agua
+      if( file_exists(FS_MYDOCS.'images/logo.png') OR file_exists(FS_MYDOCS.'images/logo.jpg') )
+      {
+         $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
+         $pdf_doc->fdf_Xlogotipo = '10'; // Valor X para Logotipo
+         $pdf_doc->fdf_Ylogotipo = '10'; // Valor Y para Logotipo
+         $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
+         $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
+         $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
+      }
+      else
+      {
+         $pdf_doc->fdf_verlogotipo = '0';
+         $pdf_doc->fdf_Xlogotipo = '0';
+         $pdf_doc->fdf_Ylogotipo = '0';
+         $pdf_doc->fdf_vermarcaagua = '0';
+         $pdf_doc->fdf_Xmarcaagua = '0';
+         $pdf_doc->fdf_Ymarcaagua = '0';
+      }
+      
+      // Tipo de Documento
+      $pdf_doc->fdf_tipodocumento = 'Albaran'; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
+      $pdf_doc->fdf_codigo = $this->albaran->codigo;
+      /*Nosotros no usamos NUMERO2 aqui . " " . $this->factura->numero2*/
+
+      // Fecha, Codigo cliente y observaciones del presupuesto
+      $pdf_doc->fdf_fecha = $this->albaran->fecha;
+      $pdf_doc->fdf_codcliente = $this->albaran->codcliente;
+      $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->fix_html($this->albaran->observaciones));
+      $pdf_doc->fdf_numero2 = $this->albaran->numero2;
+
+    
+     // Datos del Cliente
+      $pdf_doc->fdf_nombrecliente = $this->fix_html($this->albaran->nombrecliente);
+      $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
+      $pdf_doc->fdf_cifnif = $this->albaran->cifnif;
+      $pdf_doc->fdc_telefono1 = $this->cliente->telefono1;
+      $pdf_doc->fdc_telefono2 = $this->cliente->telefono2;
+      $pdf_doc->fdc_fax = $this->cliente->fax;
+      $pdf_doc->fdc_email = $this->cliente->email;
+      if ($this->albaran->envio_direccion){
+        if ($this->albaran->envio_nombre!=NULL or $this->albaran->envio_apellidos!=NULL){
+            $pdf_doc->fdf_nombrecliente = $this->fix_html($this->albaran->envio_nombre).' '.$this->fix_html($this->albaran->envio_apellidos);
+            $pdf_doc->fdf_cifnif = NULL;
+            $pdf_doc->fdf_telefono1 = ' ';
+            $pdf_doc->fdf_telefono2 = ' ';
+            $pdf_doc->fdf_fax = ' ';
+            $pdf_doc->fdf_email = ' ';
+        }
+        $pdf_doc->fdf_direccion = $this->fix_html($this->albaran->envio_direccion);
+        $pdf_doc->fdf_codpostal = $this->albaran->envio_codpostal;
+        $pdf_doc->fdf_ciudad = $this->albaran->envio_ciudad;
+        $pdf_doc->fdf_provincia = $this->albaran->envio_provincia;
+      } else {
+        $pdf_doc->fdf_direccion = $this->fix_html($this->albaran->direccion);
+        $pdf_doc->fdf_codpostal = $this->albaran->codpostal;
+        $pdf_doc->fdf_ciudad = $this->albaran->ciudad;
+        $pdf_doc->fdf_provincia = $this->albaran->provincia;
+      }
+      
+      // Fecha salida pedido
+      $pdf_doc->fdf_salida = '';
+      
+      $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
+           
+      // Forma de Pago del presupuesto
+      $formapago = $this->_genera_formapago();
+      $pdf_doc->fdf_epago = $formapago;
+      
+      // Divisa del presupuesto
+      $divisa = new divisa();
+      $edivisa = $divisa->get($this->albaran->coddivisa);
+      if ($edivisa) {
+         $pdf_doc->fdf_divisa = $edivisa->descripcion;
+      }
+
+      // Pais del presupuesto
+      $pais = new pais();
+      $epais = $pais->get($this->albaran->codpais);
+      if ($epais) {
+         $pdf_doc->fdf_pais = $epais->nombre;
+      }
+      
+      // Agencia transporte 
+      $agencia = new agencia_transporte();
+      $eagencia = $agencia->get($this->albaran->envio_codtrans);
+      if ($eagencia) {
+         $pdf_doc->fdf_agencia = $eagencia->nombre;
+      } else {
+          $pdf_doc->fdf_agencia = "SUS MEDIOS";
+      }
+      
+      // Cabecera Titulos Columnas
+      $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
+      $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+      $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
+      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      
+      /// Definimos todos los datos del PIE del presupuesto
+      /// Lineas de IVA
+      $lineas_iva = $this->get_lineas_iva($lineas);
+      
+      // Version revisada
+      if( count($lineas_iva) > 3 )
+      {
+         $pdf_doc->fdf_lineasiva = $lineas_iva;
+      }
+      else
+      {
+         $filaiva = array();
+         $totaliva = 0;
+         $i = 0;
+         foreach($lineas_iva as $li)
+         {
+            $i++;
+            $imp = $this->impuesto->get($li['codimpuesto']);
+            $filaiva[$i][0] = $li['codimpuesto'];
+            $etemp = round($li['neto'],2);
+            $filaiva[$i][1] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+            $totaliva = $totaliva + $etemp; 
+            $filaiva[$i][2] = $li['iva']. "%";
+            $etemp = round($li['totaliva'],2);
+            $filaiva[$i][3] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+            $totaliva = $totaliva + $etemp;
+            $filaiva[$i][4] = $li['recargo']. "%";
+            $etemp = round($li['totalrecargo'],2);
+            //if ($etemp =="0"){ $filaiva[$i][5] = ("000") ? $this->ckeckEuro("000") : '';}
+            //else { $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : ''; }
+            $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+            $totaliva = $totaliva + $etemp;
+            $filaiva[$i][6] = ''; //// POR CREARRRRRR
+            $filaiva[$i][7] = ''; //// POR CREARRRRRR
+            $etemp = round($li['totallinea'],2);
+            $filaiva[$i][8] = ($etemp) ? $this->ckeckEuro($etemp) : ''; 
+            $totaliva = $totaliva + $etemp;
+         }
+         
+         if($filaiva)
+         {
+            $filaiva[1][6] = $this->albaran->irpf.' %';
+            $etemp = round($this->albaran->totalirpf,2);
+            $totaliva = $totaliva - $etemp;
+            $filaiva[1][7] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+         }
+         
+         $pdf_doc->fdf_lineasiva = $filaiva;
+      }
+      
+      // Total factura numerico
+      $etemp = round($this->albaran->total,2);
+      $pdf_doc->fdf_numtotal = $this->ckeckEuro($etemp);
+
+      // Total factura numeros a texto
+      $pdf_doc->fdf_textotal = $this->albaran->total;
+
+
+      /// Agregamos la pagina inicial de la factura
+      $pdf_doc->AddPage();
+      
+      // Lineas del presupuesto
+      //$lineas = $this->factura->get_lineas();
+      
+      if ($lineas) {
+         $neto = 0;
+         $eped = "INICIO";
+         for ($i = 0; $i < count($lineas); $i++) {
+            $neto += $lineas[$i]->pvptotal;
+            $pdf_doc->neto = $this->ckeckEuro($neto);
+
+            $articulo = new articulo();
+            $art = $articulo->get($lineas[$i]->referencia);
+            if ($art) {
+               $observa = "\n" . utf8_decode( $this->fix_html($art->observaciones) );
+            } else {
+               // $observa = null; // No mostrar mensaje de error
+               $observa = "\n";
+            }
+            //$eart = utf8_decode( $this->fix_html($art->referencia));
+                if ($eped != $this->albaran->numero2){
+                    $eped = $this->albaran->numero2;
+                    $lafila = array(
+                    '0' => "\n" . $lineas[$i]->referencia,
+                    '1' => "Su pedido: " . $this->albaran->numero2 . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
+                    '2' => "\n" . utf8_decode($lineas[$i]->cantidad),
+                    '3' => "\n" . $this->ckeckEuro($lineas[$i]->pvpunitario),
+                    '4' => "\n" . utf8_decode($lineas[$i]->dtopor),
+                    '5' => "\n" . $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$lineas[$i]->dtopor/100)),
+                    '6' => "\n" . $this->ckeckEuro($lineas[$i]->pvptotal),
+                    );
+                } else {
+                    $lafila = array(
+                    '0' => $lineas[$i]->referencia,
+                    '1' => utf8_decode($lineas[$i]->descripcion) . $observa,
+                    '2' => utf8_decode($lineas[$i]->cantidad),
+                    '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
+                    '4' => utf8_decode($lineas[$i]->dtopor),
+                    '5' => $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$lineas[$i]->dtopor/100)),
+                    '6' => $this->ckeckEuro($lineas[$i]->pvptotal),
+                    );
+                }
+            
+            $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
+         }
+         $pdf_doc->piepagina = true;
+      }
+      
+      // Damos salida al archivo PDF
+      if ($archivo) {
+         if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar')) {
+            mkdir('tmp/' . FS_TMP_NAME . 'enviar');
+         }
+
+         $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
+      } else {
+         $pdf_doc->Output('Albaran '. $this->albaran->codigo . ' ' . $this->fix_html($this->albaran->nombrecliente) . '.pdf','I');
+      }
+   
+   }
+   
    private function generar_pdf_factura($tipo = 'simple', $archivo = FALSE)
    {
       if(!$archivo)

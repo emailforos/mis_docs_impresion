@@ -964,7 +964,11 @@ class PDF_MC_Table extends FPDF {
         if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
             $texte  = 'Transport terms: ' . $agen;    
         }
-        else 
+        else if ($this->fdf_tipodocumento == 'Pedido de Compra' OR $this->fdf_tipodocumento == 'Purchase Order')
+        {
+            $texte  = '' . $agen;  //Mientras no esté implementado en compras -> En blanco
+        } 
+        else
         {        
 	  $texte  = 'Agencia: ' . $agen;    
         }

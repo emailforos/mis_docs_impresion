@@ -194,12 +194,28 @@ class mis_docs_impresion extends fs_controller
               'params' => '&pedido_p=TRUE'
           ),
           array(
+              'name' => 'imprimir_edido_proveedor_uk',
+              'page_from' => __CLASS__,
+              'page_to' => 'compras_pedido',
+              'type' => 'pdf',
+              'text' => 'Imprimir pedido',
+              'params' => '&pedido_p_uk=TRUE'
+          ),
+          array(
               'name' => 'email_pedido_proveedor',
               'page_from' => __CLASS__,
               'page_to' => 'compras_pedido',
               'type' => 'email',
-              'text' => ucfirst(FS_PEDIDO).' NUEVO',
+              'text' => 'Enviar PEDIDO por e-mail',
               'params' => '&pedido_p=TRUE'
+          ),
+          array(
+              'name' => 'email_pedido_proveedor_uk',
+              'page_from' => __CLASS__,
+              'page_to' => 'compras_pedido',
+              'type' => 'email',
+              'text' => 'Enviar PEDIDO en INGLES por e-mail',
+              'params' => '&pedido_p_uk=TRUE'
           ),
           array(
               'name' => 'imprimir_pedido',
@@ -1682,6 +1698,283 @@ class mis_docs_impresion extends fs_controller
       
       // Cabecera Titulos Columnas
       $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
+      $pdf_doc->SetWidths(array(18, 90, 10, 20, 10, 20, 22));
+      $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
+      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      
+      /// Definimos todos los datos del PIE del pedido
+      /// Lineas de IVA
+      $lineas = $this->pedido->get_lineas();
+      $lineas_iva = $this->get_lineas_iva ($lineas);
+      /* original
+      if($lineas)
+      {
+         ...
+         $pdf_doc->pdf->ezText('¡'.ucfirst(FS_PEDIDO).' sin líneas!', 20);
+      }
+      */
+      
+      
+      // Version revisada
+      if( count($lineas_iva) > 3 )
+      {
+         $pdf_doc->fdf_lineasiva = $lineas_iva;
+      }
+      else
+      {
+         $filaiva = array();
+         $totaliva = 0;
+         $i = 0;
+         foreach($lineas_iva as $li)
+         {
+            $i++;
+            $imp = $this->impuesto->get($li['codimpuesto']);
+            $filaiva[$i][0] = $li['codimpuesto'];
+            $etemp = round($li['neto'],2);
+            $filaiva[$i][1] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+            $totaliva = totaliva + $etemp; 
+            $filaiva[$i][2] = $li['iva']. "%";
+            $etemp = round($li['totaliva'],2);
+            $filaiva[$i][3] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+            $totaliva = totaliva + $etemp;
+            $filaiva[$i][4] = $li['recargo']. "%";
+            $etemp = round($li['totalrecargo'],2);
+            //if ($etemp =="0"){ $filaiva[$i][5] = ("000") ? $this->ckeckEuro("000") : '';}
+            //else { $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : ''; }
+            $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+            $totaliva = totaliva + $etemp;
+            $filaiva[$i][6] = ''; //// POR CREARRRRRR
+            $filaiva[$i][7] = ''; //// POR CREARRRRRR
+            $etemp = round($li['totallinea'],2);
+            $filaiva[$i][8] = ($etemp) ? $this->ckeckEuro($etemp) : ''; 
+            $totaliva = totaliva + $etemp;
+         }
+         
+         if($filaiva)
+         {
+            $filaiva[1][6] = $this->pedido->irpf.' %';
+            $etemp = round($this->pedido->totalirpf,2);
+            $totaliva = $totaliva - $etemp;
+            $filaiva[1][7] = ($etemp) ? $this->ckeckEuro($etemp) : '';
+         }
+         
+         $pdf_doc->fdf_lineasiva = $filaiva;
+      }
+      // Total pedido numerico
+      $etemp = round($this->pedido->total,2);
+      $pdf_doc->fdf_numtotal = $this->ckeckEuro($etemp);
+
+      // Total pedido numeros a texto
+      $pdf_doc->fdf_textotal = $this->factura->total;
+
+      /// Agregamos la pagina inicial de la pedido
+      $pdf_doc->AddPage();
+      
+      // Lineas del pedido.
+      $lineas = $this->pedido->get_lineas();
+
+      if ($lineas) {
+         $neto = 0;
+         for ($i = 0; $i < count($lineas); $i++) {
+            $neto += $lineas[$i]->pvptotal;
+            $pdf_doc->neto = $this->ckeckEuro($neto);
+
+            $articulo = new articulo();
+            $art = $articulo->get($lineas[$i]->referencia);
+            if ($art) {
+               $observa = "\n" . utf8_decode( $this->fix_html($art->observaciones) );
+            } else {
+               // $observa = null; // No mostrar mensaje de error
+               $observa = "\n";
+            }
+            if($lineas[$i]->referencia){
+                $referencia = $lineas[$i]->referencia;
+            }else {
+                $referencia = '';
+            }
+            /*if( !$lineas[$i]->mostrar_cantidad ){
+                $cantidad = '';
+            } else {*/
+                    $cantidad = $lineas[$i]->cantidad;
+            /*}*/
+            /*if( !$lineas[$i]->mostrar_precio )
+            {
+               $pvpunitario = '';
+               $dtopor = '';
+               $pneto = '';
+               $pvptotal = '';
+            } else {*/
+               $pvpunitario = $this->ckeckEuro($lineas[$i]->pvpunitario);
+               $dtopor = $this->show_numero($lineas[$i]->dtopor, 0) . " %";
+               $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$dtopor/100));
+               $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
+            /*}*/
+              
+            $lafila = array(
+                    '0' => utf8_decode($referencia),
+                    '1' => utf8_decode($lineas[$i]->descripcion) . $observa,
+                    '2' => utf8_decode($cantidad),
+                    '3' => $pvpunitario,
+                    '4' => utf8_decode($dtopor),
+                    '5' => $pneto,
+                    '6' => $pvptotal, // Importe con Descuentos aplicados
+                    //'5' => $this->ckeckEuro($lineas[$i]->total_iva())
+                    );
+            $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
+         }
+         $pdf_doc->piepagina = true;
+      }
+
+      // Damos salida al archivo PDF
+      /* Version original
+      if($archivo)
+      {
+         if( !file_exists('tmp/'.FS_TMP_NAME.'enviar') )
+         {
+            mkdir('tmp/'.FS_TMP_NAME.'enviar');
+         }
+         
+         $pdf_doc->save('tmp/'.FS_TMP_NAME.'enviar/'.$archivo);
+      }
+      else
+         $pdf_doc->show(FS_PEDIDO.'_compra_'.$this->pedido->codigo.'.pdf');  
+       */
+      if ($archivo)
+      {
+         if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar'))
+         {
+            mkdir('tmp/' . FS_TMP_NAME . 'enviar');
+         }
+         
+         $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
+      }
+      else
+      {
+         //$pdf_doc->Output();
+         $pdf_doc->Output('PO'. $this->pedido->codigo . '.pdf','I');
+      }
+      
+   }
+   
+   private function generar_pdf_pedido_proveedor_uk($archivo = FALSE)
+   {
+      if( !$archivo )
+      {
+         /// desactivamos la plantilla HTML
+         $this->template = FALSE;
+      }
+      // Parte mía//
+      ///// INICIO - Pedido compras DETALLADO
+      /// Creamos el PDF y escribimos sus metadatos
+      ob_end_clean();
+      $pdf_doc = new PDF_MC_Table('P', 'mm', 'A4');
+      define('EEURO', chr(128));
+
+      $pdf_doc->SetTitle('Pedido Compra: ' . $this->pedido->codigo)/*. " " . $this->factura->numero2)*/;
+      $pdf_doc->SetSubject('Pedido del proveedor: ' . $this->pedido->nombre);
+      $pdf_doc->SetAuthor($this->empresa->nombre);
+      $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
+
+      $pdf_doc->Open();
+      $pdf_doc->AliasNbPages();
+      $pdf_doc->SetAutoPageBreak(true, 40);
+
+      // Definimos el color de relleno (gris, rojo, verde, azul)
+      $pdf_doc->SetColorRelleno('gris');
+      
+      /// Definimos todos los datos de la cabecera de la factura
+      /// Datos de la empresa
+      $pdf_doc->fde_nombre = $this->empresa->nombre;
+      $pdf_doc->fde_FS_CIFNIF = FS_CIFNIF;
+      $pdf_doc->fde_cifnif = $this->empresa->cifnif;
+      $pdf_doc->fde_direccion = $this->empresa->direccion;
+      $pdf_doc->fde_codpostal = $this->empresa->codpostal;
+      $pdf_doc->fde_ciudad = $this->empresa->ciudad;
+      $pdf_doc->fde_provincia = $this->empresa->provincia;
+      $pdf_doc->fde_telefono = 'Teléfono: ' . $this->empresa->telefono;
+      $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
+      $pdf_doc->fde_email = $this->empresa->email;
+      $pdf_doc->fde_web = $this->empresa->web;
+      $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
+
+           /// Insertamos el Logo y Marca de Agua
+      if( file_exists(FS_MYDOCS.'images/logo.png') OR file_exists(FS_MYDOCS.'images/logo.jpg') )
+      {
+         $pdf_doc->fdf_verlogotipo = '1'; // 1/0 --> Mostrar Logotipo
+         $pdf_doc->fdf_Xlogotipo = '10'; // Valor X para Logotipo
+         $pdf_doc->fdf_Ylogotipo = '10'; // Valor Y para Logotipo
+         $pdf_doc->fdf_vermarcaagua = '1'; // 1/0 --> Mostrar Marca de Agua
+         $pdf_doc->fdf_Xmarcaagua = '25'; // Valor X para Marca de Agua
+         $pdf_doc->fdf_Ymarcaagua = '110'; // Valor Y para Marca de Agua
+      }
+      else
+      {
+         $pdf_doc->fdf_verlogotipo = '0';
+         $pdf_doc->fdf_Xlogotipo = '0';
+         $pdf_doc->fdf_Ylogotipo = '0';
+         $pdf_doc->fdf_vermarcaagua = '0';
+         $pdf_doc->fdf_Xmarcaagua = '0';
+         $pdf_doc->fdf_Ymarcaagua = '0';
+      }
+      
+      // Tipo de Documento
+      $pdf_doc->fdf_tipodocumento = 'Purchase Order'; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
+      $pdf_doc->fdf_codigo = $this->pedido->codigo 
+      /*No sé para que lo usan . " " . $this->factura->numero2*/;
+
+      // Fecha, Codigo proveedor y observaciones del pedido
+      $pdf_doc->fdf_fecha = $this->pedido->fecha;
+      $pdf_doc->fdf_codcliente = $this->pedido->codproveedor;
+      $pdf_doc->fdf_observaciones = utf8_decode( $this->fix_html($this->pedido->observaciones) );
+    
+     // Datos del Proveedor
+      $pdf_doc->fdf_nombrecliente = $this->fix_html($this->pedido->nombre);
+      $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
+      $pdf_doc->fdf_cifnif = $this->pedido->cifnif;
+     // Coger datos proveedor
+      foreach($this->proveedor->get_direcciones() as $dir)
+      {
+         if($dir->direccionppal)
+         {
+            $pdf_doc->fdf_direccion = $dir->direccion;
+            $pdf_doc->fdf_codpostal = $dir->codpostal;
+            $pdf_doc->fdf_ciudad = $dir->ciudad;
+            $pdf_doc->fdf_provincia = $dir->provincia;
+            break;
+         }
+      }
+      $prov = new proveedor();
+      $eprov = $prov->get($this->pedido->codproveedor);
+      if ($eprov) {
+         $pdf_doc->fdf_telefono1 = $eprov->telefono1;
+         $pdf_doc->fdf_telefono2 = $eprov->telefono2;
+         $pdf_doc->fdf_email = $eprov->email;
+         $pdf_doc->fdf_web = $eprov->web;
+      }
+      
+      
+      $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
+      
+      // Forma de Pago del pedido
+      $formapago = $this->_genera_formapago();
+      $pdf_doc->fdf_epago = $formapago;
+
+      // Divisa de la Factura
+      $divisa = new divisa();
+      $edivisa = $divisa->get($this->pedido->coddivisa);
+      if ($edivisa) {
+         $pdf_doc->fdf_divisa = $edivisa->descripcion;
+      }
+
+      // Pais de la Factura
+      $pais = new pais();
+      $epais = $pais->get($this->pedido->codpais);
+      if ($epais) {
+         $pdf_doc->fdf_pais = $epais->nombre;
+      }
+      
+      // Cabecera Titulos Columnas
+      $pdf_doc->Setdatoscab(array('ART.','DESCRIPTION', 'Q', 'PRICE', 'DIS', 'NET', 'AMOUNT'));
       $pdf_doc->SetWidths(array(18, 90, 10, 20, 10, 20, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
       $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));

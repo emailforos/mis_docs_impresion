@@ -647,6 +647,8 @@ class PDF_MC_Table extends FPDF {
             $texte  = 'Customer nr: ' . $ref;      
         } else if ($this->fdf_tipodocumento == 'Purchase Order'){
             $texte  = 'Supplier nr: ' . $ref;      
+        }else if ($this->fdf_tipodocumento == 'Pedido de Compra'){
+            $texte  = 'Proveedor n.: ' . $ref;      
         }
         else 
         {        

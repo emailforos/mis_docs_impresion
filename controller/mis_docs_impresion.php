@@ -2346,7 +2346,7 @@ class mis_docs_impresion extends fs_controller
    {
 	$texto_pago = array();
         $fp0 = new forma_pago();
-        if( isset($_REQUEST['proforma']) OR isset($_REQUEST['proforma_uk']) OR isset($_REQUEST['pedido'])){
+        if( isset($_REQUEST['proforma']) OR isset($_REQUEST['proforma_uk']) OR isset($_REQUEST['pedido']) OR isset($_REQUEST['pedido_p'])){
           $forma_pago = $fp0->get($this->pedido->codpago);
           if($forma_pago)
                     {

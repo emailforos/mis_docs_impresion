@@ -1662,12 +1662,9 @@ class mis_docs_impresion extends fs_controller
       
       $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
       
-      // Forma de Pago del Pedido
-      $pago = new forma_pago();
-      $epago = $pago->get($this->pedido->codpago);
-      if ($epago) {
-         $pdf_doc->fdf_epago = $epago->descripcion;
-      }
+      // Forma de Pago del pedido
+      $formapago = $this->_genera_formapago();
+      $pdf_doc->fdf_epago = $formapago;
 
       // Divisa de la Factura
       $divisa = new divisa();

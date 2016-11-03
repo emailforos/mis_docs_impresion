@@ -844,7 +844,7 @@ class mis_docs_impresion extends fs_controller
 
          $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
       } else {
-         $pdf_doc->Output('Oferta '. $this->pedido->codigo . ' ' . $this->fix_html($this->pedido->nombrecliente) . '.pdf','I');
+         $pdf_doc->Output('Proforma_'. $this->pedido->codigo . '_' . $this->fix_html($this->pedido->nombrecliente) . '.pdf','I');
       }
    }
    
@@ -1094,7 +1094,7 @@ class mis_docs_impresion extends fs_controller
 
          $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
       } else {
-         $pdf_doc->Output('Oferta '. $this->pedido->codigo . ' ' . $this->fix_html($this->pedido->nombrecliente) . '.pdf','I');
+         $pdf_doc->Output('Proforma_'. $this->pedido->codigo . '_' . $this->fix_html($this->pedido->nombrecliente) . '.pdf','I');
       }
    }
    
@@ -1868,7 +1868,7 @@ class mis_docs_impresion extends fs_controller
       else
       {
          //$pdf_doc->Output();
-         $pdf_doc->Output('PO'. $this->pedido->codigo . '.pdf','I');
+         $pdf_doc->Output('PO '. $this->pedido->codigo . '.pdf','I');
       }
       
    }
@@ -2145,7 +2145,7 @@ class mis_docs_impresion extends fs_controller
       else
       {
          //$pdf_doc->Output();
-         $pdf_doc->Output('PO'. $this->pedido->codigo . '.pdf','I');
+         $pdf_doc->Output('PO '. $this->pedido->codigo . '.pdf','I');
       }
       
    }

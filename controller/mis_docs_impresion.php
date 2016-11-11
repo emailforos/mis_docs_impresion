@@ -716,7 +716,7 @@ class mis_docs_impresion extends fs_controller
       
       // Cabecera Titulos Columnas
       $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
-      $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+      $pdf_doc->SetWidths(array(25, 83, 10, 19, 12, 19, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
       $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
       
@@ -966,7 +966,7 @@ class mis_docs_impresion extends fs_controller
       
       // Cabecera Titulos Columnas
       $pdf_doc->Setdatoscab(array('ART.','DESCRIPTION', 'Q', 'PRICE', 'DIS', 'NET', 'AMOUNT'));
-      $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+      $pdf_doc->SetWidths(array(25, 83, 10, 19, 12, 19, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
       $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
       
@@ -1215,7 +1215,7 @@ class mis_docs_impresion extends fs_controller
       
       // Cabecera Titulos Columnas
       $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
-      $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+      $pdf_doc->SetWidths(array(25, 83, 10, 19, 12, 19, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
       $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
       
@@ -1315,7 +1315,7 @@ class mis_docs_impresion extends fs_controller
                $pvptotal = '';
             } else {
                $pvpunitario = $this->ckeckEuro($lineas[$i]->pvpunitario);
-               $dtopor = $this->show_numero($lineas[$i]->dtopor, 1) . "%";
+               $dtopor = $this->show_numero($lineas[$i]->dtopor, 2) . "%";
                $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*((100-$lineas[$i]->dtopor)/100));
                $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
             }
@@ -1715,7 +1715,7 @@ class mis_docs_impresion extends fs_controller
       
       // Cabecera Titulos Columnas
       $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
-      $pdf_doc->SetWidths(array(18, 90, 10, 20, 10, 20, 22));
+      $pdf_doc->SetWidths(array(18, 90, 10, 19, 12, 19, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
       $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
       

@@ -197,7 +197,7 @@ class PDF_MC_Table extends FPDF {
             // Si existen Incluimos las Observaciones
             if ($this->fdf_observaciones != '')
             {
-                $this->addObservaciones(substr($this->fdf_observaciones, 0, 150));
+                $this->addObservaciones(substr($this->fdf_observaciones, 0, 250));
             }
 
             // Lineas de Impuestos
@@ -795,7 +795,7 @@ class PDF_MC_Table extends FPDF {
         $this->SetXY( 10, $y1+2/*$this->h - 37.5*/ );
         $this->SetFillColor(230,230,230);
         $this->SetFont( "Arial", "I", 8);
-        $this->MultiCell(90,5, $observa,'0','L','true');
+        $this->MultiCell(90,4, $observa,'0','L','true');
     }
 
     // Incluir Lineas de Iva

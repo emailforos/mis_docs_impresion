@@ -1822,7 +1822,7 @@ class mis_docs_impresion extends fs_controller
                $pvptotal = '';
             } else {*/
                $pvpunitario = $this->ckeckEuro($lineas[$i]->pvpunitario);
-               $dtopor = $this->show_numero($lineas[$i]->dtopor,2) . "A";
+               $dtopor = $this->show_numero($lineas[$i]->dtopor,2) . "%";
                $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*((100-$lineas[$i]->dtopor)/100));
                $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
             /*}*/
@@ -2099,8 +2099,8 @@ class mis_docs_impresion extends fs_controller
                $pvptotal = '';
             } else {*/
                $pvpunitario = $this->ckeckEuro($lineas[$i]->pvpunitario);
-               $dtopor = $this->show_numero($lineas[$i]->dtopor, 0) . " %";
-               $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$dtopor/100));
+               $dtopor = $this->show_numero($lineas[$i]->dtopor, 2) . " %";
+               $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*((100-$lineas[$i]->dtopor)/100));
                $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
             /*}*/
               

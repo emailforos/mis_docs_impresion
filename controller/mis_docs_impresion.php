@@ -2478,55 +2478,64 @@ class mis_docs_impresion extends fs_controller
    private function enviar_email($doc)
    {
       if( $this->empresa->can_send_mail() )
-      {
+      {         
+         if($doc == 'presupuesto')
+         {
+            $filename = 'presupuesto_'.$this->presupuesto->codigo.'.pdf';
+            $this->generar_pdf_presupuesto($filename);
+            $razonsocial = $this->presupuesto->nombrecliente;
+         }
+         else if($doc == 'presupuesto_uk')
+         {
+            $filename = 'quotation_'.$this->presupuesto->codigo.'.pdf';
+            $this->generar_pdf_presupuesto_uk($filename);
+            $razonsocial = $this->presupuesto->nombrecliente;
+         }
+         else if($doc == 'proforma')
+         {
+            $filename = 'proforma_'.$this->pedido->codigo.'.pdf';
+            $this->generar_pdf_proforma($filename);
+            $razonsocial = $this->pedido->nombrecliente;
+         }
+         else if($doc == 'proforma_uk')
+         {
+            $filename = 'proforma_'.$this->pedido->codigo.'.pdf';
+            $this->generar_pdf_proforma_uk($filename);
+            $razonsocial = $this->pedido->nombrecliente;
+         }           
+         else 
+         {
+            $filename = 'pedido_'.$this->pedido->codigo.'.pdf';
+            $this->generar_pdf_pedido($filename);
+            $razonsocial = $this->pedido->nombrecliente;
+         }
+         
          if( $_POST['email'] != $this->cliente->email AND isset($_POST['guardar']) )
          {
             $this->cliente->email = $_POST['email'];
             $this->cliente->save();
          }
          
-         if($doc == 'presupuesto')
-         {
-            $filename = 'presupuesto_'.$this->presupuesto->codigo.'.pdf';
-            $this->generar_pdf_presupuesto($filename);
-         }
-         else if($doc == 'presupuesto_uk')
-         {
-            $filename = 'quotation_'.$this->presupuesto->codigo.'.pdf';
-            $this->generar_pdf_presupuesto_uk($filename);
-         }
-         else if($doc == 'proforma')
-         {
-            $filename = 'proforma_'.$this->pedido->codigo.'.pdf';
-            $this->generar_pdf_proforma($filename);
-         }
-         else if($doc == 'proforma_uk')
-         {
-            $filename = 'proforma_'.$this->pedido->codigo.'.pdf';
-            $this->generar_pdf_proforma_uk($filename);
-         }           
-         else 
-         {
-            $filename = 'pedido_'.$this->pedido->codigo.'.pdf';
-            $this->generar_pdf_pedido($filename);
-         }
-         
          if( file_exists('tmp/'.FS_TMP_NAME.'enviar/'.$filename) )
          {
             $mail = $this->empresa->new_mail();
             $mail->FromName = $this->user->get_agente_fullname();
-            $mail->addReplyTo($_POST['de'], $mail->FromName);
             
-            $mail->addAddress($_POST['email'], $this->cliente->razonsocial);
+            if($_POST['de'] != $mail->From)
+            {
+               $mail->addReplyTo($_POST['de'], $mail->FromName);
+            }
+            
+            $mail->addAddress($_POST['email'], $razonsocial);
             if($_POST['email_copia'])
             {
                if( isset($_POST['cco']) )
                {
-                  $mail->addBCC($_POST['email_copia'], $this->cliente->razonsocial);
+                  $mail->addBCC($_POST['email_copia'], $razonsocial);
                }
                else
                {
-                  $mail->addCC($_POST['email_copia'], $this->cliente->razonsocial);
+                  $mail->addCC($_POST['email_copia'], $razonsocial);
                }
             }
             
@@ -2539,9 +2548,16 @@ class mis_docs_impresion extends fs_controller
                $mail->Subject = $this->empresa->nombre . ': Su '.FS_PEDIDO.' '.$this->pedido->codigo;
             }
             
-            $mail->AltBody = $_POST['mensaje'];
-            $mail->msgHTML( nl2br($_POST['mensaje']) );
-            $mail->isHTML(TRUE);
+            if( $this->is_html($_POST['mensaje']) )
+            {
+               $mail->AltBody = strip_tags($_POST['mensaje']);
+               $mail->msgHTML($_POST['mensaje']);
+               $mail->isHTML(TRUE);
+            }
+            else
+            {
+               $mail->Body = $_POST['mensaje'];
+            }
             
             $mail->addAttachment('tmp/'.FS_TMP_NAME.'enviar/'.$filename);
             if( is_uploaded_file($_FILES['adjunto']['tmp_name']) )
@@ -2549,7 +2565,7 @@ class mis_docs_impresion extends fs_controller
                $mail->addAttachment($_FILES['adjunto']['tmp_name'], $_FILES['adjunto']['name']);
             }
             
-            if( $mail->smtpConnect($this->empresa->smtp_options()) )
+            if( $this->empresa->mail_connect($mail) )
             {
                if( $mail->send() )
                {
@@ -2738,5 +2754,17 @@ class mis_docs_impresion extends fs_controller
                       }
             }
       return $texto_pago;
+   }
+   
+   public function is_html($txt)
+   {
+      if( stripos($txt, '<html') === FALSE )
+      {
+         return FALSE;
+      }
+      else
+      {
+         return TRUE;
+      }
    }
 }

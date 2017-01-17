@@ -346,7 +346,6 @@ class mi_albaran_impresion extends fs_controller
       
       // Lineas del presupuesto
       //$lineas = $this->factura->get_lineas();
-      
       if ($lineas) {
          $neto = 0;
          $eped = "INICIO";
@@ -362,35 +361,60 @@ class mi_albaran_impresion extends fs_controller
                // $observa = null; // No mostrar mensaje de error
                $observa = "\n";
             }
-            //$eart = utf8_decode( $this->fix_html($art->referencia));
-                if ($eped != $this->albaran->numero2){
-                    $eped = $this->albaran->numero2;
-                    $lafila = array(
-                    '0' => "\n" . $lineas[$i]->referencia,
-                    '1' => "Su pedido: " . $this->albaran->numero2 . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
-                    '2' => "\n" . utf8_decode($lineas[$i]->cantidad),
-                    '3' => "\n" . $this->ckeckEuro($lineas[$i]->pvpunitario),
-                    '4' => "\n" . utf8_decode($lineas[$i]->dtopor),
-                    '5' => "\n" . $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$lineas[$i]->dtopor/100)),
-                    '6' => "\n" . $this->ckeckEuro($lineas[$i]->pvptotal),
-                    );
+            if($lineas[$i]->referencia){
+                $referencia = $lineas[$i]->referencia;
+            }else {
+                $referencia = '';
+            }
+            if( !$lineas[$i]->mostrar_cantidad ){
+                $cantidad = '';
+            } else {
+                    $cantidad = $lineas[$i]->cantidad;
+            }
+            if( !$lineas[$i]->mostrar_precio )
+            {
+               $pvpunitario = '';
+               $dtopor = '';
+               $pneto = '';
+               $pvptotal = '';
+            } else {
+               $pvpunitario = $this->ckeckEuro($lineas[$i]->pvpunitario);
+               $dtopor = $this->show_numero($lineas[$i]->dtopor, 2) /*. "%"*/;
+               $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*((100-$lineas[$i]->dtopor)/100));
+               $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
+            }
+            if ($eped != $this->albaran->numero2){
+                if ($this->albaran->numero2 == NULL){
+                    $nped = "S/N ";
                 } else {
-                    $lafila = array(
-                    '0' => $lineas[$i]->referencia,
-                    '1' => utf8_decode($lineas[$i]->descripcion) . $observa,
-                    '2' => utf8_decode($lineas[$i]->cantidad),
-                    '3' => $this->ckeckEuro($lineas[$i]->pvpunitario),
-                    '4' => utf8_decode($lineas[$i]->dtopor),
-                    '5' => $this->ckeckEuro(($lineas[$i]->pvpunitario)*(1-$lineas[$i]->dtopor/100)),
-                    '6' => $this->ckeckEuro($lineas[$i]->pvptotal),
-                    );
+                    $nped = utf8_decode($this->albaran->numero2);
                 }
-            
+                $eped = utf8_decode($this->albaran->numero2);
+                $lafila = array(
+                '0' => "\n" . utf8_decode($referencia),
+                '1' => "Su pedido: " . $nped . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
+                '2' => "\n" . utf8_decode($cantidad),
+                '3' => "\n" . $pvpunitario,
+                '4' => "\n" . utf8_decode($dtopor),
+                '5' => "\n" . $pneto,
+                '6' => "\n" . $pvptotal,
+                );
+            }
+            else{
+                $lafila = array(
+                '0' => utf8_decode($referencia),
+                '1' => utf8_decode($lineas[$i]->descripcion) . $observa,
+                '2' => utf8_decode($cantidad),
+                '3' => $pvpunitario,
+                '4' => utf8_decode($dtopor),
+                '5' => $pneto,
+                '6' => $pvptotal,
+                );
+            }
             $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
          }
          $pdf_doc->piepagina = true;
       }
-      
       // Damos salida al archivo PDF
       if ($archivo) {
          if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar')) {
@@ -606,7 +630,6 @@ class mi_albaran_impresion extends fs_controller
       
       // Lineas del presupuesto
       //$lineas = $this->factura->get_lineas();
-      
       if ($lineas) {
          $neto = 0;
          $eped = "INICIO";
@@ -622,35 +645,60 @@ class mi_albaran_impresion extends fs_controller
                // $observa = null; // No mostrar mensaje de error
                $observa = "\n";
             }
-            //$eart = utf8_decode( $this->fix_html($art->referencia));
-                if ($eped != $this->albaran->numero2){
-                    $eped = $this->albaran->numero2;
-                    $lafila = array(
-                    '0' => "\n" . $lineas[$i]->referencia,
-                    '1' => "Su pedido: " . $this->albaran->numero2 . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
-                    '2' => "\n" . utf8_decode($lineas[$i]->cantidad),
-                    '3' => "\n" . $this->ckeckEuro(0.00),
-                    '4' => "\n" . utf8_decode($lineas[$i]->dtopor),
-                    '5' => "\n" . $this->ckeckEuro(0.00),
-                    '6' => "\n" . $this->ckeckEuro(0.00),
-                    );
+            if($lineas[$i]->referencia){
+                $referencia = $lineas[$i]->referencia;
+            }else {
+                $referencia = '';
+            }
+            if( !$lineas[$i]->mostrar_cantidad ){
+                $cantidad = '';
+            } else {
+                    $cantidad = $lineas[$i]->cantidad;
+            }
+            if( !$lineas[$i]->mostrar_precio )
+            {
+               $pvpunitario = '';
+               $dtopor = '';
+               $pneto = '';
+               $pvptotal = '';
+            } else {
+               $pvpunitario = $this->ckeckEuro(0,00);
+               $dtopor = $this->show_numero($lineas[$i]->dtopor, 2) /*. "%"*/;
+               $pneto = $this->ckeckEuro(0,00);
+               $pvptotal = $this->ckeckEuro(0,00);
+            }
+            if ($eped != $this->albaran->numero2){
+                if ($this->albaran->numero2 == NULL){
+                    $nped = "S/N ";
                 } else {
-                    $lafila = array(
-                    '0' => $lineas[$i]->referencia,
-                    '1' => utf8_decode($lineas[$i]->descripcion) . $observa,
-                    '2' => utf8_decode($lineas[$i]->cantidad),
-                    '3' => $this->ckeckEuro(0.00),
-                    '4' => utf8_decode($lineas[$i]->dtopor),
-                    '5' => $this->ckeckEuro(0.00),
-                    '6' => $this->ckeckEuro(0.00),
-                    );
+                    $nped = utf8_decode($this->albaran->numero2);
                 }
-            
+                $eped = utf8_decode($this->albaran->numero2);
+                $lafila = array(
+                '0' => "\n" . utf8_decode($referencia),
+                '1' => "Su pedido: " . $nped . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
+                '2' => "\n" . utf8_decode($cantidad),
+                '3' => "\n" . $pvpunitario,
+                '4' => "\n" . utf8_decode($dtopor),
+                '5' => "\n" . $pneto,
+                '6' => "\n" . $pvptotal,
+                );
+            }
+            else{
+                $lafila = array(
+                '0' => utf8_decode($referencia),
+                '1' => utf8_decode($lineas[$i]->descripcion) . $observa,
+                '2' => utf8_decode($cantidad),
+                '3' => $pvpunitario,
+                '4' => utf8_decode($dtopor),
+                '5' => $pneto,
+                '6' => $pvptotal,
+                );
+            }
             $pdf_doc->Row($lafila, '1'); // Row(array, Descripcion del Articulo -- ultimo valor a imprimir)
          }
          $pdf_doc->piepagina = true;
       }
-      
       // Damos salida al archivo PDF
       if ($archivo) {
          if (!file_exists('tmp/' . FS_TMP_NAME . 'enviar')) {

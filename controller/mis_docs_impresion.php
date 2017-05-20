@@ -207,7 +207,7 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'compras_pedido',
               'type' => 'pdf',
-              'text' => 'Imprimir PEDIDO',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PEDIDO',
               'params' => '&pedido_p=TRUE'
           ),
           array(
@@ -215,7 +215,7 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'compras_pedido',
               'type' => 'pdf',
-              'text' => 'Imprimir PEDIDO en INGLES',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PEDIDO en INGLES',
               'params' => '&pedido_p_uk=TRUE'
           ),
           array(
@@ -239,7 +239,7 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'ventas_pedido',
               'type' => 'pdf',
-              'text' => 'Imprimir CONFIRMACION',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir CONFIRMACION',
               'params' => '&pedido=TRUE'
           ),
           array(
@@ -251,11 +251,27 @@ class mis_docs_impresion extends fs_controller
               'params' => '&pedido=TRUE'
           ),
           array(
+              'name' => 'imprimir_pedido_uk',
+              'page_from' => __CLASS__,
+              'page_to' => 'ventas_pedido',
+              'type' => 'pdf',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir CONFIRMACION en INGLES',
+              'params' => '&pedido_uk=TRUE'
+          ),
+          array(
+              'name' => 'email_pedido_uk',
+              'page_from' => __CLASS__,
+              'page_to' => 'ventas_pedido',
+              'type' => 'email',
+              'text' => 'Enviar email CONFIRMACION en INGLES',
+              'params' => '&pedido_uk=TRUE'
+          ),
+          array(
               'name' => 'imprimir_presupuesto',
               'page_from' => __CLASS__,
               'page_to' => 'ventas_presupuesto',
               'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir presupuesto',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PRESUPUESTO',
               'params' => '&presupuesto=TRUE'
           ),
           array(
@@ -263,7 +279,7 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'ventas_presupuesto',
               'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir presupuesto en INGLÉS',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PRESUPUESTO en INGLÉS',
               'params' => '&presupuesto_uk=TRUE'
           ),
           array(
@@ -271,15 +287,23 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'ventas_presupuesto',
               'type' => 'email',
-              'text' => ' Enviar presupuesto por email',
+              'text' => ' Enviar PRESUPUESTO por email',
               'params' => '&presupuesto=TRUE'
+          ),
+          array(
+              'name' => 'email_presupuesto_uk',
+              'page_from' => __CLASS__,
+              'page_to' => 'ventas_presupuesto',
+              'type' => 'email',
+              'text' => ' Enviar PRESUPUESTO en INGLES por email',
+              'params' => '&presupuesto_uk=TRUE'
           ),
           array(
               'name' => 'imprimir_proforma',
               'page_from' => __CLASS__,
               'page_to' => 'ventas_pedido',
               'type' => 'pdf',
-              'text' => 'Imprimir PROFORMA',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PROFORMA',
               'params' => '&proforma=TRUE'
           ),
           array(
@@ -295,7 +319,7 @@ class mis_docs_impresion extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'ventas_pedido',
               'type' => 'pdf',
-              'text' => 'Imprimir PROFORMA en INGLES',
+              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PROFORMA en INGLES',
               'params' => '&proforma_uk=TRUE'
           ),
           array(
@@ -917,7 +941,7 @@ class mis_docs_impresion extends fs_controller
       $pdf_doc->fdf_fecha = $this->pedido->fecha;
       $pdf_doc->fdf_codcliente = $this->pedido->codcliente;
       $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->fix_html($this->pedido->observaciones));
-
+      $pdf_doc->fdf_numero2 = $this->pedido->numero2;
     
      // Datos del Cliente
       $pdf_doc->fdf_nombrecliente = $this->fix_html($this->pedido->nombrecliente);
@@ -2541,17 +2565,44 @@ class mis_docs_impresion extends fs_controller
             
             if($doc == 'presupuesto')
             {
-               $mail->Subject = $this->empresa->nombre . ': Su '.FS_PRESUPUESTO.' '.$this->presupuesto->codigo;
+               $mail->Subject = $this->empresa->nombre . FS_PRESUPUESTO.' '.$this->presupuesto->codigo;
             }
-            else
+            if($doc == 'presupuesto_uk')
             {
-               $mail->Subject = $this->empresa->nombre . ': Su '.FS_PEDIDO.' '.$this->pedido->codigo;
+               $mail->Subject = $this->empresa->nombre . 'Quotation '.$this->presupuesto->codigo;
             }
-            
+            if ($doc == 'proforma'){  
+                if ($this->pedido->numero2 != NULL){
+                    $mail->Subject = $this->empresa->nombre . ': Factura proforma ' . $this->pedido->codigo . ' de su pedido ' . $this->pedido->numero2;
+                } else {
+                $mail->Subject = $this->empresa->nombre . ': Factura proforma ' . $this->pedido->codigo;
+                }
+            }
+            if ($doc == 'proforma_uk'){  
+                if ($this->pedido->numero2 != NULL){
+                    $mail->Subject = $this->empresa->nombre . ': Proforma invoice ' . $this->pedido->codigo . ' of your order ' . $this->pedido->numero2;
+                } else {
+                $mail->Subject = $this->empresa->nombre . ': Proforma invoice ' . $this->pedido->codigo;
+                }
+            }
+            if ($doc == 'pedido'){  
+                if ($this->pedido->numero2 != NULL){
+                    $mail->Subject = $this->empresa->nombre . ': Confirmación pedido ' . $this->pedido->codigo . ' de su pedido ' . $this->pedido->numero2;
+                } else {
+                $mail->Subject = $this->empresa->nombre . ': Confirmación pedido '.$this->pedido->codigo;
+                }
+            }
+            if ($doc == 'pedido_uk'){  
+                if ($this->pedido->numero2 != NULL){
+                    $mail->Subject = $this->empresa->nombre . ': Order confirmation ' . $this->pedido->codigo . ' of your order ' . $this->pedido->numero2;
+                } else {
+                $mail->Subject = $this->empresa->nombre . ': Order confirmation '.$this->pedido->codigo;
+                }
+            }
             if( $this->is_html($_POST['mensaje']) )
             {
                $mail->AltBody = strip_tags($_POST['mensaje']);
-               $mail->msgHTML($_POST['mensaje']);
+               $mail->msgHTML(nl2br($_POST['mensaje']));
                $mail->isHTML(TRUE);
             }
             else
@@ -2682,6 +2733,9 @@ class mis_docs_impresion extends fs_controller
                                             $encontrada = FALSE;
                                             foreach ( $cbc0->all_from_cliente ( $this->pedido->codcliente ) as $cbc ) {
                                                     $tmp_textopago = "Domiciliado en: ";
+                                                    if ($cbc->descripcion){
+                                                        $texto_pago[] = $cbc->descripcion;
+                                                    }
                                                     if ($cbc->iban) {
                                                             $texto_pago[] = $tmp_textopago. $cbc->iban ( TRUE );
                                                     }
@@ -2699,6 +2753,9 @@ class mis_docs_impresion extends fs_controller
                                             $cb0 = new cuenta_banco ();
                                             $cuenta_banco = $cb0->get ( $forma_pago->codcuenta );
                                             if ($cuenta_banco) {
+                                                    if ($cuenta_banco->descripcion){
+                                                        $texto_pago[] = $cuenta_banco->descripcion;
+                                                    }
                                                     if ($cuenta_banco->iban) {
                                                             $texto_pago[] = "IBAN: " . $cuenta_banco->iban ( TRUE );
                                                     }

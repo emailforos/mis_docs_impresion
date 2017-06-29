@@ -2565,11 +2565,11 @@ class mis_docs_impresion extends fs_controller
             
             if($doc == 'presupuesto')
             {
-               $mail->Subject = $this->empresa->nombre . FS_PRESUPUESTO.' '.$this->presupuesto->codigo;
+               $mail->Subject = $this->empresa->nombre . ': Oferta '.$this->presupuesto->codigo;
             }
             if($doc == 'presupuesto_uk')
             {
-               $mail->Subject = $this->empresa->nombre . 'Quotation '.$this->presupuesto->codigo;
+               $mail->Subject = $this->empresa->nombre . ': Quotation '.$this->presupuesto->codigo;
             }
             if ($doc == 'proforma'){  
                 if ($this->pedido->numero2 != NULL){

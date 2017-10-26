@@ -21,6 +21,11 @@
 
 require_once 'plugins/mis_docs_impresion/fpdf17/fs_fp_fpdf.php';
 
+if(!defined('FPDF_FONTPATH'))
+{
+   define('FPDF_FONTPATH', 'plugins/mi_factura_detallada/fpdf17/font/');
+}
+
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
 require_model('cliente.php');
@@ -30,6 +35,9 @@ require_model('forma_pago.php');
 //Añadidas
 require_model('pais.php');
 require_model('agencia_transporte.php');
+require_model('idioma_fac_det.php');
+require_model('divisa.php');
+
 
 
 /**
@@ -39,9 +47,10 @@ class mi_albaran_impresion extends fs_controller
 {
    public $albaran;
    public $cliente;
-   public $factura;
+   /*public $factura;*/
    public $impresion;
    public $impuesto;
+   public $idioma;
    
    private $numpaginas;
    
@@ -64,6 +73,20 @@ class mi_albaran_impresion extends fs_controller
           'print_alb' => '0',
           'print_formapago' => '1'
       );
+      /// cargamos el idioma
+      $idi0 = new idioma_fac_det();
+      if(isset($_REQUEST['codidioma']))
+      {
+         $this->idioma = $idi0->get($_REQUEST['codidioma']);
+      }
+      else
+      {
+         foreach($idi0->all() as $idi)
+         {
+            $this->idioma = $idi;
+            break;
+         }
+      }
       $fsvar = new fs_var();
       $this->impresion = $fsvar->array_get($this->impresion, FALSE);
       
@@ -108,7 +131,76 @@ class mi_albaran_impresion extends fs_controller
    
    private function share_extensions()
    {
-      $extensiones = array(
+       foreach($this->idioma->all() as $idi)
+      {
+         $fsext = new fs_extension();
+         $fsext->name = 'imprimir_albaran_' . $idi->codidioma;
+         $fsext->from = __CLASS__;
+         $fsext->to = 'ventas_albaran';
+         $fsext->type = 'pdf';
+         $fsext->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir ALBARAN valorado ' . $idi->codidioma;
+         $fsext->params = '&albaran=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext->save();
+         }
+         else
+         {
+            $fsext->delete();
+         }
+
+         $fsext2 = new fs_extension();
+         $fsext2->name = 'enviar_albaran_' . $idi->codidioma;
+         $fsext2->from = __CLASS__;
+         $fsext2->to = 'ventas_albarab';
+         $fsext2->type = 'email';
+         $fsext2->text = 'Enviar el ALBARAN ' . $idi->codidioma;
+         $fsext2->params = '&albaran=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext2->save();
+         }
+         else
+         {
+            $fsext2->delete();
+         }
+         $fsext3 = new fs_extension();
+         $fsext3->name = 'imprimir_albaran_no_val' . $idi->codidioma;
+         $fsext3->from = __CLASS__;
+         $fsext3->to = 'ventas_albaran';
+         $fsext3->type = 'pdf';
+         $fsext3->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir ALBARAN no valorado ' . $idi->codidioma;
+         $fsext3->params = '&albaran_noval=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext3->save();
+         }
+         else
+         {
+            $fsext3->delete();
+         }
+      }
+
+      /// eliminamos las antiguas extensiones
+      $fsext = new fs_extension();
+      $fsext->name = 'imprimir_albaran';
+      $fsext->from = __CLASS__;
+      $fsext->delete();
+
+      $fsext2 = new fs_extension();
+      $fsext2->name = 'email_albaran';
+      $fsext2->from = __CLASS__;
+      $fsext2->delete();
+      
+      $fsext3 = new fs_extension();
+      $fsext3->name = 'imprimir_albaran_noval';
+      $fsext3->from = __CLASS__;
+      $fsext3->delete();
+      
+      /*$extensiones = array(
           array(
               'name' => 'imprimir_albaran',
               'page_from' => __CLASS__,
@@ -141,10 +233,10 @@ class mi_albaran_impresion extends fs_controller
          {
             $this->new_error_msg('Error al guardar la extensión '.$ext['name']);
          }
-      }
+      }*/
    }
    
-   private function generar_pdf_albaran($archivo = FALSE)
+   public function generar_pdf_albaran($archivo = FALSE)
    {
       if(!$archivo)
       {
@@ -156,10 +248,11 @@ class mi_albaran_impresion extends fs_controller
       ob_end_clean();
       $pdf_doc = new PDF_MC_Table('P', 'mm', 'A4');
       define('EEURO', chr(128));
+      $pdf_doc->idioma = $this->idioma;
       $lineas = $this->albaran->get_lineas();
 
-      $pdf_doc->SetTitle('Albaran: '. $this->albaran->codigo);
-      $pdf_doc->SetSubject('Cliente: ' . $this->albaran->nombrecliente);
+      $pdf_doc->SetTitle(ucfirst($this->idioma->albaran).': '. $this->albaran->codigo);
+      $pdf_doc->SetSubject(ucfirst($this->idioma->cliente).': '. $this->albaran->nombrecliente);
       $pdf_doc->SetAuthor($this->empresa->nombre);
       $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
 
@@ -179,8 +272,8 @@ class mi_albaran_impresion extends fs_controller
       $pdf_doc->fde_codpostal = $this->empresa->codpostal;
       $pdf_doc->fde_ciudad = $this->empresa->ciudad;
       $pdf_doc->fde_provincia = $this->empresa->provincia;
-      $pdf_doc->fde_telefono = 'Teléfono: ' . $this->empresa->telefono;
-      $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
+      $pdf_doc->fde_telefono = ucfirst($this->idioma->telefono) . ': '. $this->empresa->telefono;
+      $pdf_doc->fde_fax = ucfirst($this->idioma->fax) . ': ' . $this->empresa->fax;
       $pdf_doc->fde_email = $this->empresa->email;
       $pdf_doc->fde_web = $this->empresa->web;
       $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
@@ -213,12 +306,12 @@ class mi_albaran_impresion extends fs_controller
       // Fecha, Codigo cliente y observaciones del presupuesto
       $pdf_doc->fdf_fecha = $this->albaran->fecha;
       $pdf_doc->fdf_codcliente = $this->albaran->codcliente;
-      $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->fix_html($this->albaran->observaciones));
+      $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->idioma->fix_html($this->albaran->observaciones));
       $pdf_doc->fdf_numero2 = $this->albaran->numero2;
 
     
      // Datos del Cliente
-      $pdf_doc->fdf_nombrecliente = $this->fix_html($this->albaran->nombrecliente);
+      $pdf_doc->fdf_nombrecliente = $this->idioma->fix_html($this->albaran->nombrecliente);
       $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
       $pdf_doc->fdf_cifnif = $this->albaran->cifnif;
       $pdf_doc->fdc_telefono1 = $this->cliente->telefono1;
@@ -227,19 +320,19 @@ class mi_albaran_impresion extends fs_controller
       $pdf_doc->fdc_email = $this->cliente->email;
       if ($this->albaran->envio_direccion){
         if ($this->albaran->envio_nombre!=NULL or $this->albaran->envio_apellidos!=NULL){
-            $pdf_doc->fdf_nombrecliente = $this->fix_html($this->albaran->envio_nombre).' '.$this->fix_html($this->albaran->envio_apellidos);
+            $pdf_doc->fdf_nombrecliente = $this->idioma->fix_html($this->albaran->envio_nombre).' '.$this->idioma->fix_html($this->albaran->envio_apellidos);
             $pdf_doc->fdf_cifnif = NULL;
             $pdf_doc->fdf_telefono1 = ' ';
             $pdf_doc->fdf_telefono2 = ' ';
             $pdf_doc->fdf_fax = ' ';
             $pdf_doc->fdf_email = ' ';
         }
-        $pdf_doc->fdf_direccion = $this->fix_html($this->albaran->envio_direccion);
+        $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->albaran->envio_direccion);
         $pdf_doc->fdf_codpostal = $this->albaran->envio_codpostal;
         $pdf_doc->fdf_ciudad = $this->albaran->envio_ciudad;
         $pdf_doc->fdf_provincia = $this->albaran->envio_provincia;
       } else {
-        $pdf_doc->fdf_direccion = $this->fix_html($this->albaran->direccion);
+        $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->albaran->direccion);
         $pdf_doc->fdf_codpostal = $this->albaran->codpostal;
         $pdf_doc->fdf_ciudad = $this->albaran->ciudad;
         $pdf_doc->fdf_provincia = $this->albaran->provincia;
@@ -278,10 +371,49 @@ class mi_albaran_impresion extends fs_controller
       }
       
       // Cabecera Titulos Columnas
-      $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
+      /*$pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
       $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
-      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));*/
+      // Cabecera Titulos Columnas
+      if($this->impresion['print_dto'])
+      {
+         $pdf_doc->Setdatoscab(
+                 array(
+                     utf8_decode( mb_strtoupper($this->idioma->articulo) ),
+                     utf8_decode( mb_strtoupper($this->idioma->descripcion) ),
+                     utf8_decode( mb_strtoupper($this->idioma->cant) ),
+                     utf8_decode( mb_strtoupper($this->idioma->precio) ),
+                     utf8_decode( mb_strtoupper($this->idioma->dto) ),
+                     utf8_decode( mb_strtoupper($this->idioma->neto) ),
+                     'SUBTOTAL',
+                     //utf8_decode( mb_strtoupper($this->idioma->iva) ),
+                     //utf8_decode( mb_strtoupper($this->idioma->importe) ),
+                 )
+         );
+         $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+         $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      }
+      else
+      {
+         $pdf_doc->Setdatoscab(
+                 array(
+                     utf8_decode( mb_strtoupper($this->idioma->articulo) ),
+                     utf8_decode( mb_strtoupper($this->idioma->descripcion) ),
+                     utf8_decode( mb_strtoupper($this->idioma->cant) ),
+                     utf8_decode( mb_strtoupper($this->idioma->precio) ),
+                     utf8_decode( mb_strtoupper($this->idioma->dto) ),
+                     utf8_decode( mb_strtoupper($this->idioma->neto) ),
+                     'SUBTOTAL',
+                     //utf8_decode( mb_strtoupper($this->idioma->iva) ),
+                     //utf8_decode( mb_strtoupper($this->idioma->importe) ),
+                 )
+         );
+         $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+         $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      }
       
       /// Definimos todos los datos del PIE del presupuesto
       /// Lineas de IVA
@@ -356,7 +488,7 @@ class mi_albaran_impresion extends fs_controller
             $articulo = new articulo();
             $art = $articulo->get($lineas[$i]->referencia);
             if ($art && $art->partnumber!="") {
-                $observa = "\n" . "S/Ref. " . utf8_decode( $this->fix_html($art->partnumber) );            } else {
+                $observa = "\n" . "Art. " . utf8_decode( $this->idioma->fix_html($art->partnumber) );            } else {
                 // $observa = null; // No mostrar mensaje de error
                 $observa = "\n";
             }
@@ -391,7 +523,7 @@ class mi_albaran_impresion extends fs_controller
                 $eped = utf8_decode($this->albaran->numero2);
                 $lafila = array(
                 '0' => "\n" . utf8_decode($referencia),
-                '1' => "Su pedido: " . $nped . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
+                '1' => utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->pedido))) . ': '  . $nped . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
                 '2' => "\n" . utf8_decode($cantidad),
                 '3' => "\n" . $pvpunitario,
                 '4' => "\n" . utf8_decode($dtopor),
@@ -422,12 +554,12 @@ class mi_albaran_impresion extends fs_controller
 
          $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
       } else {
-         $pdf_doc->Output('Albaran '. $this->albaran->codigo . ' ' . $this->fix_html($this->albaran->nombrecliente) . '.pdf','I');
+         $pdf_doc->Output('Albaran '. $this->albaran->codigo . ' ' . utf8_decode($this->idioma->fix_html($this->albaran->nombrecliente)) . '.pdf','I');
       }
    
    }
    
-   private function generar_pdf_albaran_no_valorado($archivo = FALSE)
+   public function generar_pdf_albaran_no_valorado($archivo = FALSE)
    {
       if(!$archivo)
       {
@@ -439,10 +571,11 @@ class mi_albaran_impresion extends fs_controller
       ob_end_clean();
       $pdf_doc = new PDF_MC_Table('P', 'mm', 'A4');
       define('EEURO', chr(128));
+      $pdf_doc->idioma = $this->idioma;
       $lineas = $this->albaran->get_lineas();
 
-      $pdf_doc->SetTitle('Albaran: '. $this->albaran->codigo);
-      $pdf_doc->SetSubject('Cliente: ' . $this->albaran->nombrecliente);
+      $pdf_doc->SetTitle(ucfirst( $this->idioma->fix_html($this->idioma->albaran)).': '. $this->albaran->codigo);
+      $pdf_doc->SetSubject(ucfirst( $this->idioma->fix_html($this->idioma->cliente)).': ' . $this->albaran->nombrecliente);
       $pdf_doc->SetAuthor($this->empresa->nombre);
       $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
 
@@ -462,8 +595,8 @@ class mi_albaran_impresion extends fs_controller
       $pdf_doc->fde_codpostal = $this->empresa->codpostal;
       $pdf_doc->fde_ciudad = $this->empresa->ciudad;
       $pdf_doc->fde_provincia = $this->empresa->provincia;
-      $pdf_doc->fde_telefono = 'Teléfono: ' . $this->empresa->telefono;
-      $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
+      $pdf_doc->fde_telefono = ucfirst( $this->idioma->fix_html($this->idioma->telefono)).': ' . $this->empresa->telefono;
+      $pdf_doc->fde_fax = ucfirst( $this->idioma->fix_html($this->idioma->fax)).': ' . $this->empresa->fax;
       $pdf_doc->fde_email = $this->empresa->email;
       $pdf_doc->fde_web = $this->empresa->web;
       $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
@@ -496,12 +629,12 @@ class mi_albaran_impresion extends fs_controller
       // Fecha, Codigo cliente y observaciones del presupuesto
       $pdf_doc->fdf_fecha = $this->albaran->fecha;
       $pdf_doc->fdf_codcliente = $this->albaran->codcliente;
-      $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->fix_html($this->albaran->observaciones));
+      $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->idioma->fix_html($this->albaran->observaciones));
       $pdf_doc->fdf_numero2 = $this->albaran->numero2;
 
     
      // Datos del Cliente
-      $pdf_doc->fdf_nombrecliente = $this->fix_html($this->albaran->nombrecliente);
+      $pdf_doc->fdf_nombrecliente = $this->idioma->fix_html($this->albaran->nombrecliente);
       $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
       $pdf_doc->fdf_cifnif = $this->albaran->cifnif;
       $pdf_doc->fdc_telefono1 = $this->cliente->telefono1;
@@ -510,19 +643,19 @@ class mi_albaran_impresion extends fs_controller
       $pdf_doc->fdc_email = $this->cliente->email;
       if ($this->albaran->envio_direccion){
         if ($this->albaran->envio_nombre!=NULL or $this->albaran->envio_apellidos!=NULL){
-            $pdf_doc->fdf_nombrecliente = $this->fix_html($this->albaran->envio_nombre).' '.$this->fix_html($this->albaran->envio_apellidos);
+            $pdf_doc->fdf_nombrecliente = $this->idioma->fix_html($this->albaran->envio_nombre).' '.$this->idioma->fix_html($this->albaran->envio_apellidos);
             $pdf_doc->fdf_cifnif = NULL;
             $pdf_doc->fdf_telefono1 = ' ';
             $pdf_doc->fdf_telefono2 = ' ';
             $pdf_doc->fdf_fax = ' ';
             $pdf_doc->fdf_email = ' ';
         }
-        $pdf_doc->fdf_direccion = $this->fix_html($this->albaran->envio_direccion);
+        $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->albaran->envio_direccion);
         $pdf_doc->fdf_codpostal = $this->albaran->envio_codpostal;
         $pdf_doc->fdf_ciudad = $this->albaran->envio_ciudad;
         $pdf_doc->fdf_provincia = $this->albaran->envio_provincia;
       } else {
-        $pdf_doc->fdf_direccion = $this->fix_html($this->albaran->direccion);
+        $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->albaran->direccion);
         $pdf_doc->fdf_codpostal = $this->albaran->codpostal;
         $pdf_doc->fdf_ciudad = $this->albaran->ciudad;
         $pdf_doc->fdf_provincia = $this->albaran->provincia;
@@ -561,10 +694,49 @@ class mi_albaran_impresion extends fs_controller
       }
       
       // Cabecera Titulos Columnas
-      $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
+      /*$pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
       $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
-      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));*/
+      // Cabecera Titulos Columnas
+      if($this->impresion['print_dto'])
+      {
+         $pdf_doc->Setdatoscab(
+                 array(
+                     utf8_decode( mb_strtoupper($this->idioma->articulo) ),
+                     utf8_decode( mb_strtoupper($this->idioma->descripcion) ),
+                     utf8_decode( mb_strtoupper($this->idioma->cant) ),
+                     utf8_decode( mb_strtoupper($this->idioma->precio) ),
+                     utf8_decode( mb_strtoupper($this->idioma->dto) ),
+                     utf8_decode( mb_strtoupper($this->idioma->neto) ),
+                     'SUBTOTAL',
+                     //utf8_decode( mb_strtoupper($this->idioma->iva) ),
+                     //utf8_decode( mb_strtoupper($this->idioma->importe) ),
+                 )
+         );
+         $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+         $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      }
+      else
+      {
+         $pdf_doc->Setdatoscab(
+                 array(
+                     utf8_decode( mb_strtoupper($this->idioma->articulo) ),
+                     utf8_decode( mb_strtoupper($this->idioma->descripcion) ),
+                     utf8_decode( mb_strtoupper($this->idioma->cant) ),
+                     utf8_decode( mb_strtoupper($this->idioma->precio) ),
+                     utf8_decode( mb_strtoupper($this->idioma->dto) ),
+                     utf8_decode( mb_strtoupper($this->idioma->neto) ),
+                     'SUBTOTAL',
+                     //utf8_decode( mb_strtoupper($this->idioma->iva) ),
+                     //utf8_decode( mb_strtoupper($this->idioma->importe) ),
+                 )
+         );
+         $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+         $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      }
       
       /// Definimos todos los datos del PIE del presupuesto
       /// Lineas de IVA
@@ -639,7 +811,7 @@ class mi_albaran_impresion extends fs_controller
             $articulo = new articulo();
             $art = $articulo->get($lineas[$i]->referencia);
             if ($art && $art->partnumber!="") {
-               $observa = "\n" . "S/Ref. " . utf8_decode( $this->fix_html($art->partnumber) );
+               $observa = "\n" . "Art. " . utf8_decode( $this->idioma->fix_html($art->partnumber) );
             } else {
                // $observa = null; // No mostrar mensaje de error
                $observa = "\n";
@@ -675,7 +847,7 @@ class mi_albaran_impresion extends fs_controller
                 $eped = utf8_decode($this->albaran->numero2);
                 $lafila = array(
                 '0' => "\n" . utf8_decode($referencia),
-                '1' => "Su pedido: " . $nped . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
+                '1' => ucfirst( $this->idioma->fix_html($this->idioma->pedido)).': '. $nped . "\n" . utf8_decode($lineas[$i]->descripcion) . $observa,
                 '2' => "\n" . utf8_decode($cantidad),
                 '3' => "\n" . $pvpunitario,
                 '4' => "\n" . utf8_decode($dtopor),
@@ -706,7 +878,7 @@ class mi_albaran_impresion extends fs_controller
 
          $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
       } else {
-         $pdf_doc->Output('Albaran '. $this->albaran->codigo . ' ' . $this->fix_html($this->albaran->nombrecliente) . ' no valorado.pdf','I');
+         $pdf_doc->Output('Albaran '. $this->albaran->codigo . ' ' . utf8_decode($this->idioma->fix_html($this->albaran->nombrecliente)) . ' no valorado.pdf','I');
       }
    
    }
@@ -1187,14 +1359,14 @@ class mi_albaran_impresion extends fs_controller
    }
    
    // Funciones añadidas
-   private function fix_html($txt)
+   /*private function fix_html($txt)
    {
       $newt = str_replace('&lt;', '<', $txt);
       $newt = str_replace('&gt;', '>', $newt);
       $newt = str_replace('&quot;', '"', $newt);
       $newt = str_replace('&#39;', "'", $newt);
       return $newt;
-   }
+   }*/
    public function ckeckEuro($cadena)
    {
       $mostrar = $this->show_precio($cadena, $this->empresa->coddivisa);

@@ -130,10 +130,10 @@ class PDF_MC_Table extends FPDF {
         $cliente .= $this->fdf_codpostal . " - ";
         $cliente .= $this->fdf_ciudad . " (".$this->fdf_provincia.")\n";
         $cliente .= $this->fdf_pais . "\n";
-        $cliente .= "Tlf: " . $this->fdc_telefono1;
+        $cliente .= ucfirst( $this->idioma->fix_html($this->idioma->telefono)).': ' . $this->fdc_telefono1;
         if($this->fdc_telefono2) { $cliente .= " - " . $this->fdc_telefono2 . "\n"; } else { $cliente .= "\n"; }
-        if($this->fdc_fax) { $cliente .= "Fax: " . $this->fdc_fax . "\n"; }
-        if($this->fdc_email) { $cliente .= "Email: " . $this->fdc_email . "\n"; }		
+        if($this->fdc_fax) { $cliente .= ucfirst($this->idioma->fax).': ' . $this->fdc_fax . "\n"; }
+        if($this->fdc_email) { $cliente .= ucfirst($this->idioma->email).': '. $this->fdc_email . "\n"; }		
         $this->addClientAdresse(utf8_decode($cliente));		
 
         // Forma de Pago del presupuesto / pedido
@@ -553,7 +553,7 @@ class PDF_MC_Table extends FPDF {
         {
             $this->SetXY(12,68);	
             $this->SetFont('Arial','',9);
-            $this->Write(5,'Email: ');
+            $this->Write(5,ucfirst($this->idioma->email).': ');
             $this->SetTextColor(0,0,255);
             $this->Write(5, $email, 'mailto:' . $email);
             $this->SetTextColor(0);		
@@ -564,7 +564,7 @@ class PDF_MC_Table extends FPDF {
         {
             $this->SetXY(12,72);
             $this->SetFont('Arial','',9);
-            $this->Write(5,'Web: ');
+            $this->Write(5,ucfirst($this->idioma->web).': ');
             $this->SetTextColor(0,0,255);
             $this->Write(5, $web, $web);
             $this->SetTextColor(0);
@@ -580,17 +580,17 @@ class PDF_MC_Table extends FPDF {
         $y1  = 12;
         $y2  = $y1 + 2;
         $mid = ($r1 + $r2 ) / 2;
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $texte  = 'Nr.: ' . $num;    
-        }
-        else 
-        {        
-	  $texte  = 'N'.chr(176).': ' . $num;    
-        }
-        
-        
+            
+	$texte  = '' . $num;       
+                
         $this->SetFont( "Arial", "B", 15 );
         $this->SetXY($this->w,14);
+        if ($libelle=="Albaran"){
+            $libelle = ucfirst( $this->idioma->fix_html($this->idioma->albaran));
+        } else
+        {
+            $libelle = ucfirst( $this->idioma->fix_html($this->idioma->pedido));
+        }
         $this->Cell(0,6,$libelle,0,0,'R');
         $this->SetFont("Arial", "B", 12 );
         $this->SetXY($this->w,19);
@@ -608,15 +608,14 @@ class PDF_MC_Table extends FPDF {
         {
             $texte  = 'Fecha presupuesto: ' . $date;    
         } else if ($this->fdf_tipodocumento == 'Purchase Order' OR $this->fdf_tipodocumento == 'Proforma Invoice'){
-            $texte  = 'Order date: ' . $date;
+            $texte  = ucfirst( $this->idioma->fix_html($this->idioma->pedido)) . ' ' . ucfirst( $this->idioma->fix_html($this->idioma->fecha)) .': ' . $date;
         } else if ($this->fdf_tipodocumento == 'Quotation'){
             $texte  = 'Quotation date: ' . $date;
         }else if ($this->fdf_tipodocumento == 'Albaran'){
-            $texte  = 'Fecha albar'.chr(225).'n: ' . $date;
-        }
-        else 
+            $texte  = ucfirst( $this->idioma->fix_html($this->idioma->albaran)) . ' ' . $this->idioma->fix_html($this->idioma->fecha) .': ' . $date;    
+        }else 
         {        
-	  $texte  = 'Fecha pedido: ' . $date;    
+	    $texte = ucfirst( $this->idioma->fix_html($this->idioma->pedido)) . ' ' . ucfirst( $this->idioma->fix_html($this->idioma->fecha)) .': '  . $date;    
         }
         $this->SetXY($this->w,24);
         $this->SetFont("Arial", "" , 9 );
@@ -643,16 +642,14 @@ class PDF_MC_Table extends FPDF {
         $y1  = 17;
         $y2  = $y1;
         $mid = $y1 + ($y2 / 2);
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation'){
-            $texte  = 'Customer nr: ' . $ref;      
-        } else if ($this->fdf_tipodocumento == 'Purchase Order'){
+        if ($this->fdf_tipodocumento == 'Purchase Order'){
             $texte  = 'Supplier nr: ' . $ref;      
         }else if ($this->fdf_tipodocumento == 'Pedido de Compra'){
             $texte  = 'Proveedor n.: ' . $ref;      
         }
         else 
         {        
-	  $texte  = 'C'.chr(243).'digo cliente: ' . $ref;      
+            $texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->num_cliente))) .': ' . $ref;    
         }
 	
         $this->SetXY($this->w,32);
@@ -667,7 +664,7 @@ class PDF_MC_Table extends FPDF {
         $y1  = 17;
         $y2  = $y1;
         $mid = $y1 + ($y2 / 2);
-	  $texte  = 'P'.chr(225).'g. ' . $page;    
+	  $texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->pagina))) . $page;    
         $this->SetXY($this->w,$this->h-10);
         $this->SetFont("Arial","",8);
         $this->Cell(0,4,$texte,0,0,'R');
@@ -706,14 +703,8 @@ class PDF_MC_Table extends FPDF {
         $this->Line($r1, $y1 + 5, $r2, $y1 + 5);
         $this->SetXY($r1 + ($r2 - $r1) / 2 - 5, $y1 + 1);      
         $this->SetFont("Arial", "B", 9);
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->Cell(10, 4, "PAYMENT TERMS", 0, 0, "C");   
-        }
-        else 
-        {        
-	  $this->Cell(10, 4, "FORMA DE PAGO", 0, 0, "C");   
-        }
-           
+	$this->Cell(10, 4, ucfirst( $this->idioma->fix_html($this->idioma->forma_pago)), 0, 0, "C");   
+                  
         $salto = 4;
         $just = 'L';
         if ($numlineas < 3)
@@ -785,13 +776,8 @@ class PDF_MC_Table extends FPDF {
         $this->SetFont( "Arial", "B", 8);
         $length = $this->GetStringWidth("Observaciones: " . $observa);
         $this->SetXY( 10, $y1/*$this->h - 37.5*/ );
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->Cell($length,0, "Remarks:");
-        }
-        else 
-        {        
-	  $this->Cell($length,0, "Observaciones:");
-        }
+        $texto = ucfirst( $this->idioma->fix_html($this->idioma->observaciones).': ');
+        $this->Cell($length,0, $texto);
         $this->SetXY( 10, $y1+2/*$this->h - 37.5*/ );
         $this->SetFillColor(230,230,230);
         $this->SetFont( "Arial", "I", 8);

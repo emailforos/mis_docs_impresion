@@ -880,42 +880,15 @@ class PDF_MC_Table extends FPDF {
         $this->Line( $r1+83,  $y1+4, $r1+83, $y2);		
         $this->Line( $r1+101, $y1, $r1+101, $y2);
         $this->SetXY( $r1, $y1);
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->Cell(26,4, "NET", 0, '', "C");
-        }
-        else 
-        {        
-	  $this->Cell(26,4, "NETO", 0, '', "C");
-        }
-        
+        $this->Cell(26,4, mb_strtoupper( $this->idioma->fix_html($this->idioma->neto)), 0, '', "C");
         $this->SetX( $r1+26 );
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->Cell(25,4, "VAT", 0, '', "C");
-        }
-        else 
-        {        
-	  $this->Cell(25,4, FS_IVA, 0, '', "C");
-        }
-        
+        $this->Cell(25,4, mb_strtoupper( $this->idioma->fix_html($this->idioma->iva)), 0, '', "C");
         $this->SetX( $r1+51 );
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->Cell(25,4, "EQUIV.REC", 0, '', "C");
-        }
-        else 
-        {        
-	  $this->Cell(25,4, "REC. EQUIV.", 0, '', "C");
-        }
-        
+        $this->Cell(25,4, mb_strtoupper( $this->idioma->fix_html($this->idioma->rec_equiv)), 0, '', "C");
         $this->SetX( $r1+76 );
         $this->Cell(25,4, FS_IRPF, 0, '', "C");
         $this->SetX( $r1+101 );
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->Cell(25,4, "AMOUNT", 0, '', "C");
-        }
-        else 
-        {        
-	  $this->Cell(24,4, "IMPORTES", 0, '', "C");
-        }
+        $this->Cell(24,4, mb_strtoupper( $this->idioma->fix_html($this->idioma->importes)), 0, '', "C");
         
         $r1  = $this->w - 70;
         $r2  = $r1 + 60;
@@ -948,17 +921,18 @@ class PDF_MC_Table extends FPDF {
         $x2  = $x1;
         $y2  = $y1+5;
         $mid = $y1 + (($y2-$y1) / 2);
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
+        /*if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
             $texte  = 'Transport terms: ' . $agen;    
         }
         else if ($this->fdf_tipodocumento == 'Pedido de Compra' OR $this->fdf_tipodocumento == 'Purchase Order')
         {
             $texte  = '' . $agen;  //Mientras no esté implementado en compras -> En blanco
-        } 
+        }
         else
         {        
 	  $texte  = 'Agencia: ' . $agen;    
-        }
+        }*/
+        $texte  = ucfirst( $this->idioma->fix_html($this->idioma->transporte)) . ': ' . $agen;
         $this->SetXY($x1,$y2/*$h-41,5*/);
         $this->SetFont( "Arial","B",9);
         $this->Cell(0,5,$texte,0,0,'L');
@@ -1148,11 +1122,7 @@ class PDF_MC_Table extends FPDF {
         $y1  = 17;
         $y2  = $y1;
         $mid = $y1 + ($y2 / 2);
-        if ($this->fdf_tipodocumento == 'Proforma Invoice') {
-            $texte  = "Your order: ". $ref; 
-        } else {
-        $texte  = "Su pedido: ". $ref; 
-        }
+        $texte  = ucfirst( $this->idioma->fix_html($this->idioma->cliente)) . " - ". $this->idioma->fix_html($this->idioma->pedido) . ": ".$ref; 
         $this->SetXY($this->w,28);
         $this->SetFont( "Arial", "U", 9);
         $this->Cell(0,4,$texte,0,0,'R');

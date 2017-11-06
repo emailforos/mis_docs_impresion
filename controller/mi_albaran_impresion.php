@@ -153,7 +153,7 @@ class mi_albaran_impresion extends fs_controller
          $fsext2 = new fs_extension();
          $fsext2->name = 'enviar_albaran_' . $idi->codidioma;
          $fsext2->from = __CLASS__;
-         $fsext2->to = 'ventas_albarab';
+         $fsext2->to = 'ventas_albaran';
          $fsext2->type = 'email';
          $fsext2->text = 'Enviar el ALBARAN ' . $idi->codidioma;
          $fsext2->params = '&albaran=TRUE&codidioma=' . $idi->codidioma;
@@ -476,7 +476,7 @@ class mi_albaran_impresion extends fs_controller
       /// Agregamos la pagina inicial de la factura
       $pdf_doc->AddPage();
       
-      // Lineas del presupuesto
+      // Lineas del albaran
       //$lineas = $this->factura->get_lineas();
       if ($lineas) {
          $neto = 0;

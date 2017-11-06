@@ -20,6 +20,12 @@
  */
 
 require_once 'plugins/mis_docs_impresion/fpdf17/fs_fp_fpdf.php';
+
+if(!defined('FPDF_FONTPATH'))
+{
+   define('FPDF_FONTPATH', 'plugins/mi_factura_detallada/fpdf17/font/');
+}
+
 require_once 'extras/phpmailer/class.phpmailer.php';
 require_once 'extras/phpmailer/class.smtp.php';
 require_model('articulo_proveedor.php');
@@ -36,6 +42,7 @@ require_model('pais.php');
 require_model('cuenta_banco.php');
 require_model('cuenta_banco_cliente.php');
 require_model('agencia_transporte.php');
+require_model('idioma_fac_det.php');
 
 
 /**
@@ -50,6 +57,7 @@ class mis_docs_impresion extends fs_controller
    public $pedido;
    public $presupuesto;
    public $proveedor;
+   public $idioma;   
    
    private $numpaginas;
    
@@ -71,8 +79,23 @@ class mis_docs_impresion extends fs_controller
       $this->impresion = array(
           'print_ref' => '1',
           'print_dto' => '1',
-          'print_alb' => '0'
+          'print_alb' => '0',
+          'print_formapago' => '1'
       );
+      /// cargamos el idioma
+      $idi0 = new idioma_fac_det();
+      if(isset($_REQUEST['codidioma']))
+      {
+         $this->idioma = $idi0->get($_REQUEST['codidioma']);
+      }
+      else
+      {
+         foreach($idi0->all() as $idi)
+         {
+            $this->idioma = $idi;
+            break;
+         }
+      }
       $fsvar = new fs_var();
       $this->impresion = $fsvar->array_get($this->impresion, FALSE);
       
@@ -201,144 +224,192 @@ class mis_docs_impresion extends fs_controller
    
    private function share_extensions()
    {
-      $extensiones = array(
-          array(
-              'name' => 'imprimir_edido_proveedor',
-              'page_from' => __CLASS__,
-              'page_to' => 'compras_pedido',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PEDIDO',
-              'params' => '&pedido_p=TRUE'
-          ),
-          array(
-              'name' => 'imprimir_edido_proveedor_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'compras_pedido',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PEDIDO en INGLES',
-              'params' => '&pedido_p_uk=TRUE'
-          ),
-          array(
-              'name' => 'email_pedido_proveedor',
-              'page_from' => __CLASS__,
-              'page_to' => 'compras_pedido',
-              'type' => 'email',
-              'text' => 'Enviar PEDIDO por e-mail',
-              'params' => '&pedido_p=TRUE'
-          ),
-          array(
-              'name' => 'email_pedido_proveedor_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'compras_pedido',
-              'type' => 'email',
-              'text' => 'Enviar PEDIDO en INGLES por e-mail',
-              'params' => '&pedido_p_uk=TRUE'
-          ),
-          array(
-              'name' => 'imprimir_pedido',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir CONFIRMACION',
-              'params' => '&pedido=TRUE'
-          ),
-          array(
-              'name' => 'email_pedido',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'email',
-              'text' => 'Enviar email CONFIRMACION',
-              'params' => '&pedido=TRUE'
-          ),
-          array(
-              'name' => 'imprimir_pedido_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir CONFIRMACION en INGLES',
-              'params' => '&pedido_uk=TRUE'
-          ),
-          array(
-              'name' => 'email_pedido_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'email',
-              'text' => 'Enviar email CONFIRMACION en INGLES',
-              'params' => '&pedido_uk=TRUE'
-          ),
-          array(
-              'name' => 'imprimir_presupuesto',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_presupuesto',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PRESUPUESTO',
-              'params' => '&presupuesto=TRUE'
-          ),
-          array(
-              'name' => 'imprimir_presupuesto_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_presupuesto',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PRESUPUESTO en INGLÉS',
-              'params' => '&presupuesto_uk=TRUE'
-          ),
-          array(
-              'name' => 'email_presupuesto',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_presupuesto',
-              'type' => 'email',
-              'text' => ' Enviar PRESUPUESTO por email',
-              'params' => '&presupuesto=TRUE'
-          ),
-          array(
-              'name' => 'email_presupuesto_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_presupuesto',
-              'type' => 'email',
-              'text' => ' Enviar PRESUPUESTO en INGLES por email',
-              'params' => '&presupuesto_uk=TRUE'
-          ),
-          array(
-              'name' => 'imprimir_proforma',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PROFORMA',
-              'params' => '&proforma=TRUE'
-          ),
-          array(
-              'name' => 'email_proforma',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'email',
-              'text' => 'Enviar PROFORMA por email',
-              'params' => '&proforma=TRUE'
-          ),
-          array(
-              'name' => 'imprimir_proforma_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'pdf',
-              'text' => '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PROFORMA en INGLES',
-              'params' => '&proforma_uk=TRUE'
-          ),
-          array(
-              'name' => 'email_proforma_uk',
-              'page_from' => __CLASS__,
-              'page_to' => 'ventas_pedido',
-              'type' => 'email',
-              'text' => 'Enviar PROFORMA por email en INGLES',
-              'params' => '&proforma_uk=TRUE'
-          )
-      );
-      foreach($extensiones as $ext)
+       foreach($this->idioma->all() as $idi)
       {
-         $fsext = new fs_extension($ext);
-         if( !$fsext->save() )
+         $fsext = new fs_extension();
+         $fsext->name = 'imprimir_pedido_proveedor_' . $idi->codidioma;
+         $fsext->from = __CLASS__;
+         $fsext->to = 'compras_pedido';
+         $fsext->type = 'pdf';
+         $fsext->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PEDIDO ' . $idi->codidioma;
+         $fsext->params = '&pedido_p=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
          {
-            $this->new_error_msg('Error al guardar la extensión '.$ext['name']);
+            $fsext->save();
          }
+         else
+         {
+            $fsext->delete();
+         }
+
+         $fsext2 = new fs_extension();
+         $fsext2->name = 'email_pedido_proveedor_' . $idi->codidioma;
+         $fsext2->from = __CLASS__;
+         $fsext2->to = 'compras_pedido';
+         $fsext2->type = 'email';
+         $fsext2->text = 'Enviar el PEDIDO ' . $idi->codidioma;
+         $fsext2->params = '&pedido_p=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext2->save();
+         }
+         else
+         {
+            $fsext2->delete();
+         }
+         $fsext3 = new fs_extension();
+         $fsext3->name = 'imprimir_pedido_' . $idi->codidioma;
+         $fsext3->from = __CLASS__;
+         $fsext3->to = 'ventas_pedido';
+         $fsext3->type = 'pdf';
+         $fsext3->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir CONFIRMACION ' . $idi->codidioma;
+         $fsext3->params = '&pedido=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext3->save();
+         }
+         else
+         {
+            $fsext3->delete();
+         }
+         
+         $fsext4 = new fs_extension();
+         $fsext4->name = 'email_pedido_' . $idi->codidioma;
+         $fsext4->from = __CLASS__;
+         $fsext4->to = 'ventas_pedido';
+         $fsext4->type = 'email';
+         $fsext4->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Enviar email CONFIRMACION ' . $idi->codidioma;
+         $fsext4->params = '&pedido=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext4->save();
+         }
+         else
+         {
+            $fsext4->delete();
+         }
+         
+         $fsext5 = new fs_extension();
+         $fsext5->name = 'imprimir_presupuesto_' . $idi->codidioma;
+         $fsext5->from = __CLASS__;
+         $fsext5->to = 'ventas_presupuesto';
+         $fsext5->type = 'pdf';
+         $fsext5->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PRESUPUESTO ' . $idi->codidioma;
+         $fsext5->params = '&presupuesto=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext5->save();
+         }
+         else
+         {
+            $fsext5->delete();
+         }         
+         
+         $fsext6 = new fs_extension();
+         $fsext6->name = 'email_presupuesto_' . $idi->codidioma;
+         $fsext6->from = __CLASS__;
+         $fsext6->to = 'ventas_presupuesto';
+         $fsext6->type = 'email';
+         $fsext6->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Enviar PRESUPUESTO por email ' . $idi->codidioma;
+         $fsext6->params = '&presupuesto=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext6->save();
+         }
+         else
+         {
+            $fsext6->delete();
+         }
+         
+         $fsext7 = new fs_extension();
+         $fsext7->name = 'imprimir_proforma_' . $idi->codidioma;
+         $fsext7->from = __CLASS__;
+         $fsext7->to = 'ventas_pedido';
+         $fsext7->type = 'pdf';
+         $fsext7->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Imprimir PROFORMA ' . $idi->codidioma;
+         $fsext7->params = '&proforma=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext7->save();
+         }
+         else
+         {
+            $fsext7->delete();
+         }
+         
+         $fsext8 = new fs_extension();
+         $fsext8->name = 'email_proforma_' . $idi->codidioma;
+         $fsext8->from = __CLASS__;
+         $fsext8->to = 'ventas_pedido';
+         $fsext8->type = 'email';
+         $fsext8->text = '<span class="glyphicon glyphicon-check"></span>&nbsp; Enviar email PROFORMA ' . $idi->codidioma;
+         $fsext8->params = '&proforma=TRUE&codidioma=' . $idi->codidioma;
+         
+         if($idi->activo)
+         {
+            $fsext8->save();
+         }
+         else
+         {
+            $fsext8->delete();
+         }         
       }
+
+      /// eliminamos las antiguas extensiones
+      $fsext = new fs_extension();
+      $fsext->name = 'imprimir_pedido_proveedor';
+      $fsext->from = __CLASS__;
+      $fsext->delete();
+
+      $fsext2 = new fs_extension();
+      $fsext2->name = 'email_pedido_proveedor';
+      $fsext2->from = __CLASS__;
+      $fsext2->delete();
+      
+      $fsext3 = new fs_extension();
+      $fsext3->name = 'imprimir_pedido';
+      $fsext3->from = __CLASS__;
+      $fsext3->delete();
+      
+      $fsext4 = new fs_extension();
+      $fsext4->name = 'email_pedido';
+      $fsext4->from = __CLASS__;
+      $fsext4->delete();
+      
+      $fsext5 = new fs_extension();
+      $fsext5->name = 'imprimir_presupuesto';
+      $fsext5->from = __CLASS__;
+      $fsext5->delete();
+      
+      $fsext6 = new fs_extension();
+      $fsext6->name = 'email_presupuesto';
+      $fsext6->from = __CLASS__;
+      $fsext6->delete();
+            
+      $fsext7 = new fs_extension();
+      $fsext7->name = 'imprimir_proforma';
+      $fsext7->from = __CLASS__;
+      $fsext7->delete();
+            
+      $fsext8 = new fs_extension();
+      $fsext8->name = 'email_proforma';
+      $fsext8->from = __CLASS__;
+      $fsext8->delete();
+            
+      $fsext9 = new fs_extension();
+      $fsext9->name = 'imprimir_proforma_uk';
+      $fsext9->from = __CLASS__;
+      $fsext9->delete();
+      
+      
+          
    }
    
    /**
@@ -2196,10 +2267,11 @@ class mis_docs_impresion extends fs_controller
       ob_end_clean();
       $pdf_doc = new PDF_MC_Table('P', 'mm', 'A4');
       define('EEURO', chr(128));
+      $pdf_doc->idioma = $this->idioma;
       $lineas = $this->pedido->get_lineas();
 
-      $pdf_doc->SetTitle('Confirmacion del pedido: '. $this->pedido->codigo);
-      $pdf_doc->SetSubject('Pedido del cliente: ' . $this->pedido->nombrecliente);
+      $pdf_doc->SetTitle(ucfirst($this->idioma->pedido).': '. $this->pedido->codigo);
+      $pdf_doc->SetSubject(ucfirst($this->idioma->cliente).': '. $this->pedido->nombrecliente);
       $pdf_doc->SetAuthor($this->empresa->nombre);
       $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
 
@@ -2219,8 +2291,8 @@ class mis_docs_impresion extends fs_controller
       $pdf_doc->fde_codpostal = $this->empresa->codpostal;
       $pdf_doc->fde_ciudad = $this->empresa->ciudad;
       $pdf_doc->fde_provincia = $this->empresa->provincia;
-      $pdf_doc->fde_telefono = 'Teléfono: ' . $this->empresa->telefono;
-      $pdf_doc->fde_fax = 'Fax: ' . $this->empresa->fax;
+      $pdf_doc->fde_telefono = ucfirst($this->idioma->telefono) . ': '. $this->empresa->telefono;
+      $pdf_doc->fde_fax = ucfirst($this->idioma->fax) . ': ' . $this->empresa->fax;
       $pdf_doc->fde_email = $this->empresa->email;
       $pdf_doc->fde_web = $this->empresa->web;
       $pdf_doc->fde_piefactura = $this->empresa->pie_factura;
@@ -2253,15 +2325,15 @@ class mis_docs_impresion extends fs_controller
       // Fecha, Codigo cliente y observaciones del presupuesto
       $pdf_doc->fdf_fecha = $this->pedido->fecha;
       $pdf_doc->fdf_codcliente = $this->pedido->codcliente;
-      $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->fix_html($this->pedido->observaciones));
+      $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->idioma->fix_html($this->pedido->observaciones));
       $pdf_doc->fdf_numero2 = $this->pedido->numero2;
 
     
      // Datos del Cliente
-      $pdf_doc->fdf_nombrecliente = $this->fix_html($this->pedido->nombrecliente);
+      $pdf_doc->fdf_nombrecliente = $this->idioma->fix_html($this->pedido->nombrecliente);
       $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
       $pdf_doc->fdf_cifnif = $this->pedido->cifnif;
-      $pdf_doc->fdf_direccion = $this->fix_html($this->pedido->direccion);
+      $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->pedido->direccion);
       $pdf_doc->fdf_codpostal = $this->pedido->codpostal;
       $pdf_doc->fdf_ciudad = $this->pedido->ciudad;
       $pdf_doc->fdf_provincia = $this->pedido->provincia;
@@ -2302,11 +2374,51 @@ class mis_docs_impresion extends fs_controller
           $pdf_doc->fdf_agencia = "SUS MEDIOS";
       }
       
-      // Cabecera Titulos Columnas
+      /*// Cabecera Titulos Columnas
       $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
       $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
       $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
-      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));*/
+      
+      // Cabecera Titulos Columnas
+      if($this->impresion['print_dto'])
+      {
+         $pdf_doc->Setdatoscab(
+                 array(
+                     utf8_decode( mb_strtoupper($this->idioma->articulo) ),
+                     utf8_decode( mb_strtoupper($this->idioma->descripcion) ),
+                     utf8_decode( mb_strtoupper($this->idioma->cant) ),
+                     utf8_decode( mb_strtoupper($this->idioma->precio) ),
+                     utf8_decode( mb_strtoupper($this->idioma->dto) ),
+                     utf8_decode( mb_strtoupper($this->idioma->neto) ),
+                     'SUBTOTAL',
+                     //utf8_decode( mb_strtoupper($this->idioma->iva) ),
+                     //utf8_decode( mb_strtoupper($this->idioma->importe) ),
+                 )
+         );
+         $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+         $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      }
+      else
+      {
+         $pdf_doc->Setdatoscab(
+                 array(
+                     utf8_decode( mb_strtoupper($this->idioma->articulo) ),
+                     utf8_decode( mb_strtoupper($this->idioma->descripcion) ),
+                     utf8_decode( mb_strtoupper($this->idioma->cant) ),
+                     utf8_decode( mb_strtoupper($this->idioma->precio) ),
+                     utf8_decode( mb_strtoupper($this->idioma->dto) ),
+                     utf8_decode( mb_strtoupper($this->idioma->neto) ),
+                     'SUBTOTAL',
+                     //utf8_decode( mb_strtoupper($this->idioma->iva) ),
+                     //utf8_decode( mb_strtoupper($this->idioma->importe) ),
+                 )
+         );
+         $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+         $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
+         $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
+      }
       
       /// Definimos todos los datos del PIE del presupuesto
       /// Lineas de IVA
@@ -2369,7 +2481,7 @@ class mis_docs_impresion extends fs_controller
       /// Agregamos la pagina inicial de la factura
       $pdf_doc->AddPage();
       
-      // Lineas del presupuesto
+      // Lineas del pedido
       //$lineas = $this->factura->get_lineas();
       
       if ($lineas) {
@@ -2381,7 +2493,7 @@ class mis_docs_impresion extends fs_controller
             $articulo = new articulo();
             $art = $articulo->get($lineas[$i]->referencia);
             if ($art && $art->partnumber!="") {
-               $observa = "\n" . "Ref. " . utf8_decode( $this->fix_html($art->partnumber) );
+               $observa = "\n" . "Art. " . utf8_decode( $this->idioma->fix_html($art->partnumber) ); 
             } else {
                // $observa = null; // No mostrar mensaje de error
                $observa = "\n";
@@ -2432,7 +2544,7 @@ class mis_docs_impresion extends fs_controller
 
          $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
       } else {
-         $pdf_doc->Output('Confirmacion '. $this->pedido->codigo . ' ' . $this->fix_html($this->pedido->nombrecliente) . '.pdf','I');
+         $pdf_doc->Output('Confirmacion '. $this->pedido->codigo . ' ' . utf8_decode($this->idioma->fix_html($this->pedido->nombrecliente)) . '.pdf','I');
       }
    }
    

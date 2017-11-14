@@ -3,6 +3,8 @@
 <strong>Ubicación del plugin:</strong> facturascripts/plugins/mis_docs_impresion
 
 <br>
+Añadido soporte multi-idioma a albaranes y pedidos. Ahora es requisito tener 
+mi_factura_detallada instalada por el tema de la base de datos.
 
 <strong>Descripción</strong>
 

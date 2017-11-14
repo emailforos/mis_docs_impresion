@@ -132,8 +132,8 @@ class PDF_MC_Table extends FPDF {
         $cliente .= $this->fdf_pais . "\n";
         $cliente .= ucfirst( $this->idioma->fix_html($this->idioma->telefono)).': ' . $this->fdc_telefono1;
         if($this->fdc_telefono2) { $cliente .= " - " . $this->fdc_telefono2 . "\n"; } else { $cliente .= "\n"; }
-        if($this->fdc_fax) { $cliente .= ucfirst($this->idioma->fax).': ' . $this->fdc_fax . "\n"; }
-        if($this->fdc_email) { $cliente .= ucfirst($this->idioma->email).': '. $this->fdc_email . "\n"; }		
+        if($this->fdc_fax) { $cliente .= ucfirst($this->idioma->fix_html($this->idioma->fax)).': ' . $this->fdc_fax . "\n"; }
+        if($this->fdc_email) { $cliente .= ucfirst($this->idioma->fix_html($this->idioma->email)).': '. $this->fdc_email . "\n"; }		
         $this->addClientAdresse(utf8_decode($cliente));		
 
         // Forma de Pago del presupuesto / pedido
@@ -572,7 +572,7 @@ class PDF_MC_Table extends FPDF {
         }
     }
 
-    // Nombre y numero de la factura
+    // Nombre y numero del documento
     function fact_dev( $libelle, $num )
     {
         $r1  = $this->w - 100;
@@ -586,10 +586,16 @@ class PDF_MC_Table extends FPDF {
         $this->SetFont( "Arial", "B", 15 );
         $this->SetXY($this->w,14);
         if ($libelle=="Albaran"){
-            $libelle = ucfirst( $this->idioma->fix_html($this->idioma->albaran));
-        } else
+            $libelle = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->albaran)));
+        } else if ($libelle=="Pedido"){
+            $libelle = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->pedido)));
+        } else  if ($libelle=="Proforma"){
+            $libelle = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->proforma)));
+        } else  if ($libelle=="Compra"){
+            $libelle = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->compra)));
+        } else 
         {
-            $libelle = ucfirst( $this->idioma->fix_html($this->idioma->pedido));
+            $libelle = ucfirst($this->idioma->fix_html($this->idioma->presupuesto));
         }
         $this->Cell(0,6,$libelle,0,0,'R');
         $this->SetFont("Arial", "B", 12 );
@@ -604,15 +610,12 @@ class PDF_MC_Table extends FPDF {
         $y1  = 17;
         $y2  = $y1 ;
         $mid = $y1 + ($y2 / 2);
-        if ($this->fdf_tipodocumento == 'Oferta')
-        {
-            $texte  = 'Fecha presupuesto: ' . $date;    
-        } else if ($this->fdf_tipodocumento == 'Purchase Order' OR $this->fdf_tipodocumento == 'Proforma Invoice'){
+        if ($this->fdf_tipodocumento == 'Oferta'){
+            $texte  = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->presupuesto))) . ' ' . $this->idioma->fix_html($this->idioma->fecha) .': ' . $date;    
+        } else if ($this->fdf_tipodocumento == 'Pedido'){
             $texte  = ucfirst( $this->idioma->fix_html($this->idioma->pedido)) . ' ' . ucfirst( $this->idioma->fix_html($this->idioma->fecha)) .': ' . $date;
-        } else if ($this->fdf_tipodocumento == 'Quotation'){
-            $texte  = 'Quotation date: ' . $date;
         }else if ($this->fdf_tipodocumento == 'Albaran'){
-            $texte  = ucfirst( $this->idioma->fix_html($this->idioma->albaran)) . ' ' . $this->idioma->fix_html($this->idioma->fecha) .': ' . $date;    
+            $texte  = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->albaran))) . ' ' . $this->idioma->fix_html($this->idioma->fecha) .': ' . $date;    
         }else 
         {        
 	    $texte = ucfirst( $this->idioma->fix_html($this->idioma->pedido)) . ' ' . ucfirst( $this->idioma->fix_html($this->idioma->fecha)) .': '  . $date;    
@@ -642,10 +645,8 @@ class PDF_MC_Table extends FPDF {
         $y1  = 17;
         $y2  = $y1;
         $mid = $y1 + ($y2 / 2);
-        if ($this->fdf_tipodocumento == 'Purchase Order'){
-            $texte  = 'Supplier nr: ' . $ref;      
-        }else if ($this->fdf_tipodocumento == 'Pedido de Compra'){
-            $texte  = 'Proveedor n.: ' . $ref;      
+        if ($this->fdf_tipodocumento == 'Compra'){
+            $texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->proveedor))) .': ' . $ref;      
         }
         else 
         {        
@@ -664,7 +665,7 @@ class PDF_MC_Table extends FPDF {
         $y1  = 17;
         $y2  = $y1;
         $mid = $y1 + ($y2 / 2);
-	  $texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->pagina))) . $page;    
+	  $texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->pagina))) ." ". $page;    
         $this->SetXY($this->w,$this->h-10);
         $this->SetFont("Arial","",8);
         $this->Cell(0,4,$texte,0,0,'R');
@@ -837,14 +838,9 @@ class PDF_MC_Table extends FPDF {
         $this->Cell(30,4, $this->fdf_divisa, 0, 0, "C");
         $this->SetFont( "Arial", "B", 8);
         $this->SetXY( $r1, $y1+7 );
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->Cell(15,4, "NET", 0, 0, "C");    
-        }
-        else 
-        {        
-	  $this->Cell(15,4, "NETO", 0, 0, "C");    
-        }
         
+        $this->Cell(15,4, mb_strtoupper($this->idioma->fix_html($this->idioma->neto)), 0, 0, "C");    
+                
         // Total Neto de la pagina
         $this->SetFont( "Arial", "", 9);
         $this->SetXY( $r1+16, $y1+6.5 );
@@ -853,13 +849,7 @@ class PDF_MC_Table extends FPDF {
         // Suma y Sigue		
         $this->SetFont( "Arial", "B", 6);
         $this->SetXY( $r1+16, $y1+13 );
-        if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $this->MultiCell(43,3,'(CARRIED FORWARD)',0,'C');
-        }
-        else 
-        {        
-	  $this->MultiCell(43,3,'(SUMA y SIGUE)',0,'C');
-        }
+        $this->MultiCell(43,3,mb_strtoupper($this->idioma->fix_html($this->idioma->suma_sigue)),0,'C');
     }
 
     function addTotal()
@@ -921,17 +911,6 @@ class PDF_MC_Table extends FPDF {
         $x2  = $x1;
         $y2  = $y1+5;
         $mid = $y1 + (($y2-$y1) / 2);
-        /*if ($this->fdf_tipodocumento == 'Proforma Invoice' OR $this->fdf_tipodocumento == 'Quotation' OR $this->fdf_tipodocumento == 'Purchase Order'){
-            $texte  = 'Transport terms: ' . $agen;    
-        }
-        else if ($this->fdf_tipodocumento == 'Pedido de Compra' OR $this->fdf_tipodocumento == 'Purchase Order')
-        {
-            $texte  = '' . $agen;  //Mientras no esté implementado en compras -> En blanco
-        }
-        else
-        {        
-	  $texte  = 'Agencia: ' . $agen;    
-        }*/
         $texte  = ucfirst( $this->idioma->fix_html($this->idioma->transporte)) . ': ' . $agen;
         $this->SetXY($x1,$y2/*$h-41,5*/);
         $this->SetFont( "Arial","B",9);
@@ -941,11 +920,7 @@ class PDF_MC_Table extends FPDF {
     //Añadir fecha expedición pedido.
     function addSalida($fechasalida)
     {
-        if ($this->fdf_tipodocumento=='Purchase Order' OR $this->fdf_tipodocumento=='Proforma Invoice'){
-            $texte  = 'Lead time: ' . $fechasalida;    
-        } else {
-            $texte  = 'Fecha de salida: ' . $fechasalida;    
-        }
+        $texte  = ucfirst( $this->idioma->fix_html($this->idioma->entrega)) . ': ' . $fechasalida;    
         
         $x1 = 10;
         $y1 = 255;
@@ -1122,7 +1097,7 @@ class PDF_MC_Table extends FPDF {
         $y1  = 17;
         $y2  = $y1;
         $mid = $y1 + ($y2 / 2);
-        $texte  = ucfirst( $this->idioma->fix_html($this->idioma->cliente)) . " - ". $this->idioma->fix_html($this->idioma->pedido) . ": ".$ref; 
+        $texte  = ucfirst( $this->idioma->fix_html($this->idioma->pedido_cliente)) . ": ".$ref; 
         $this->SetXY($this->w,28);
         $this->SetFont( "Arial", "U", 9);
         $this->Cell(0,4,$texte,0,0,'R');

@@ -251,7 +251,7 @@ class mi_albaran_impresion extends fs_controller
       $pdf_doc->idioma = $this->idioma;
       $lineas = $this->albaran->get_lineas();
 
-      $pdf_doc->SetTitle(ucfirst($this->idioma->albaran).': '. $this->albaran->codigo);
+      $pdf_doc->SetTitle(utf8_decode(ucfirst($this->idioma->albaran)).': '. $this->albaran->codigo);
       $pdf_doc->SetSubject(ucfirst($this->idioma->cliente).': '. $this->albaran->nombrecliente);
       $pdf_doc->SetAuthor($this->empresa->nombre);
       $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
@@ -510,7 +510,7 @@ class mi_albaran_impresion extends fs_controller
                $pvptotal = '';
             } else {
                $pvpunitario = $this->ckeckEuro($lineas[$i]->pvpunitario);
-               $dtopor = $this->show_numero($lineas[$i]->dtopor, 2) /*. "%"*/;
+               $dtopor = $this->show_numero($lineas[$i]->dtopor, 1) /*. "%"*/;
                $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*((100-$lineas[$i]->dtopor)/100));
                $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
             }
@@ -574,7 +574,7 @@ class mi_albaran_impresion extends fs_controller
       $pdf_doc->idioma = $this->idioma;
       $lineas = $this->albaran->get_lineas();
 
-      $pdf_doc->SetTitle(ucfirst( $this->idioma->fix_html($this->idioma->albaran)).': '. $this->albaran->codigo);
+      $pdf_doc->SetTitle(utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->albaran))).': '. $this->albaran->codigo);
       $pdf_doc->SetSubject(ucfirst( $this->idioma->fix_html($this->idioma->cliente)).': ' . $this->albaran->nombrecliente);
       $pdf_doc->SetAuthor($this->empresa->nombre);
       $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());

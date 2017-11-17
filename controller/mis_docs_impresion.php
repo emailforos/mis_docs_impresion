@@ -1541,7 +1541,7 @@ class mis_docs_impresion extends fs_controller
                $pvptotal = '';
             } else {*/
                $pvpunitario = $this->ckeckEuro($lineas[$i]->pvpunitario);
-               $dtopor = $this->show_numero($lineas[$i]->dtopor,1) . "%";
+               $dtopor = $this->show_numero($lineas[$i]->dtopor,1) /*. "%"*/;
                $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*((100-$lineas[$i]->dtopor)/100));
                $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
             /*}*/

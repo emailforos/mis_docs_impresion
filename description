@@ -1,0 +1,45 @@
+Plugin que personaliza el formato de impresión de: 
+<ul>
+<li> Presupuesto</li>
+<ul>
+<li> Datos completos de empresa y cliente.
+<li> Añadida forma de pago
+<li> Añadida agencia
+<li> Añadido numero cliente
+<li> Campo de observaciones personalizado
+</ul>
+<li> Confirmación de pedido</li>
+<ul>
+<li> Datos completos de empresa y cliente.
+<li> Añadida forma de pago
+<li> Añadida agencia
+<li> Añadido numero cliente
+<li> Campo de observaciones personalizado
+</ul>
+<li> Factura proforma en castellano e inglés
+<ul>
+<li> Datos completos de empresa y cliente.
+<li> Añadida forma de pago
+<li> Añadida agencia
+<li> Añadido numero cliente
+<li> Campo de observaciones personalizado
+</ul>
+<li> Pedido de compras en castellano e inglés.
+<ul>
+<li> Datos completos de empresa y proveedor.
+<li> Añadida forma de pago
+<li> Dejado preparado para cuando se pueda indicar agencia
+<li> Añadido numero proveedor
+<li> Campo de observaciones personalizado
+</ul>
+<li> Albaranes.
+<ul>
+<li> Datos completos de empresa y cliente.
+<li> Añadida forma de pago (sin datos bancarios por privacidad).
+<li> Añadida agencia
+<li> Añadido numero proveedor
+<li> Campo de observaciones personalizado
+</ul>
+</ul>
+<p>Ahora con soporte multi-idioma</p>
+

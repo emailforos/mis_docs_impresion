@@ -1121,7 +1121,7 @@ class mis_docs_impresion extends fs_controller
                      //utf8_decode( mb_strtoupper($this->idioma->importe) ),
                  )
          );
-         $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
+         $pdf_doc->SetWidths(array(25, 75, 10, 20, 10, 20, 22));
          $pdf_doc->SetAligns(array('L', 'L', 'R', 'R', 'R', 'R', 'R'));
          $pdf_doc->SetColors(array('0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));
       }

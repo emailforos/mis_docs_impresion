@@ -72,6 +72,11 @@ class PDF_MC_Table extends FPDF {
     function Header()
     {
         // Datos de la empresa
+        $this->AddFont('LiberationSans','','LiberationSans-Regular.php');
+        $this->AddFont('LiberationSans','B','LiberationSans-Bold.php');
+        $this->AddFont('LiberationSans','I','LiberationSans-Italic.php');
+
+
         $direccion = $this->fde_FS_CIFNIF . ": ES-" . utf8_decode($this->fde_cifnif) . "\n" . $this->fde_direccion;
         if($this->fde_codpostal && $this->fde_ciudad)
         {
@@ -153,9 +158,9 @@ class PDF_MC_Table extends FPDF {
         //$this->addPais(utf8_decode($this->fdf_pais));
 
         // Pie de la Factura
-        //$this->SetFont('Arial','',5);
+        //$this->SetFont('LiberationSans','',5);
         //$this->RotatedText(6, 210, utf8_decode($this->fde_piefactura), 90);
-        $this->SetFont('Arial','',7);
+        $this->SetFont('LiberationSans','',7);
         $this->SetY(-8);
         $this->SetLineWidth(0.1);		
         $this->SetTextColor(0);
@@ -163,7 +168,7 @@ class PDF_MC_Table extends FPDF {
 
         // Cabecera Titulos Columnas
         $this->SetXY(18, 95);
-        $this->SetFont( "Arial", "B", 9);
+        $this->SetFont( "LiberationSans", "B", 9);
         for($i=0;$i<count($this->datoscab);$i++) 
         {
             $this->Cell($this->widths[$i],5,$this->datoscab[$i],1,0,'C',1);		
@@ -192,7 +197,7 @@ class PDF_MC_Table extends FPDF {
         $this->SetY(-30);
         $this->SetLineWidth(0.1);		
         $this->SetTextColor(0);
-        $this->SetFont('Arial','',8);
+        $this->SetFont('LiberationSans','',8);
         if ($this->piepagina == true)
         {
             // Si existen Incluimos las Observaciones
@@ -214,7 +219,7 @@ class PDF_MC_Table extends FPDF {
 
     function Row($data, $ultimo='1')
     {
-        $this->SetFont('Arial','',8);
+        $this->SetFont('LiberationSans','',8);
 
         // Guardamos la posicion Actual
         $x=$this->GetX()+8;
@@ -535,7 +540,7 @@ class PDF_MC_Table extends FPDF {
         $y1 = 42;
 	  $altocuadro=40;
         $this->SetXY(18,37);
-        $this->SetFont('Arial','',10);
+        $this->SetFont('LiberationSans','',10);
         $this->SetTextColor(0);
         $length = $this->GetStringWidth( $nom );
         $this->MultiCell(66,5,'Emisor: ');
@@ -544,18 +549,19 @@ class PDF_MC_Table extends FPDF {
         $this->MultiCell(82,$altocuadro,'',0,'R',1);
         $this->SetTextColor(0);
         $this->SetXY(20,45);
-        $this->SetFont('Arial','B',12);
+        $this->AddFont('LiberationSans','','LiberationSans-Regular.php');
+        $this->SetFont('LiberationSans','B',12);
         $length = $this->GetStringWidth( $nom );
         $this->MultiCell(80,4,$nom,0,'L');
         $this->SetXY(20,49);
-        $this->SetFont('Arial','',10);
+        $this->SetFont('LiberationSans','',10);
         $length = $this->GetStringWidth( $adresse );
         $this->MultiCell($length, 4, $adresse);
 
         if ($email != '')
         {
             $this->SetXY(20,68);	
-            $this->SetFont('Arial','',9);
+            $this->SetFont('LiberationSans','',9);
             $this->Write(5,ucfirst($this->idioma->email).': ');
             $this->SetTextColor(0,0,255);
             $this->Write(5, $email, 'mailto:' . $email);
@@ -566,7 +572,7 @@ class PDF_MC_Table extends FPDF {
         if ($web != '')
         {
             $this->SetXY(20,72);
-            $this->SetFont('Arial','',9);
+            $this->SetFont('LiberationSans','',9);
             $this->Write(5,ucfirst($this->idioma->web).': ');
             $this->SetTextColor(0,0,255);
             $this->Write(5, $web, $web);
@@ -586,7 +592,7 @@ class PDF_MC_Table extends FPDF {
             
 	$texte  = '' . $num;       
                 
-        $this->SetFont( "Arial", "B", 15 );
+        $this->SetFont( "LiberationSans", "B", 15 );
         $this->SetXY($this->w,14);
         if ($libelle=="Albaran"){
             $libelle = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->albaran)));
@@ -601,7 +607,7 @@ class PDF_MC_Table extends FPDF {
             $libelle = ucfirst($this->idioma->fix_html($this->idioma->presupuesto));
         }
         $this->Cell(0,6,$libelle,0,0,'R');
-        $this->SetFont("Arial", "B", 12 );
+        $this->SetFont( "LiberationSans", "B", 12 );
         $this->SetXY($this->w,19);
         $this->Cell(0,6,$texte,0,0,'R');
     }
@@ -624,7 +630,7 @@ class PDF_MC_Table extends FPDF {
 	    $texte = ucfirst( $this->idioma->fix_html($this->idioma->pedido)) . ' ' . ucfirst( $this->idioma->fix_html($this->idioma->fecha)) .': '  . $date;    
         }
         $this->SetXY($this->w,24);
-        $this->SetFont("Arial", "" , 9 );
+        $this->SetFont('LiberationSans','', 9 );
         $this->Cell(0,4,$texte,0,0,'R');
     }
 
@@ -637,7 +643,7 @@ class PDF_MC_Table extends FPDF {
         $mid = $y1 + ($y2 / 2);
 	  $texte  = 'Fecha vencimiento: ' . $date;  
         $this->SetXY($this->w,28);
-        $this->SetFont( "Arial", "u", 9);
+        $this->SetFont( "LiberationSans", "u", 9);
         $this->Cell(0,4,$texte,0,0,'R');
     }
 
@@ -657,7 +663,7 @@ class PDF_MC_Table extends FPDF {
         }
 	
         $this->SetXY($this->w,32);
-        $this->SetFont( "Arial", "", 9);
+        $this->SetFont('LiberationSans','', 9);
         $this->Cell(0,4,$texte,0,0,'R');
     }
 
@@ -670,7 +676,7 @@ class PDF_MC_Table extends FPDF {
         $mid = $y1 + ($y2 / 2);
 	  $texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->pagina))) ." ". $page;    
         $this->SetXY($this->w,$this->h-10);
-        $this->SetFont("Arial","",8);
+        $this->SetFont('LiberationSans','',8);
         $this->Cell(0,4,$texte,0,0,'R');
     }
 
@@ -681,8 +687,7 @@ class PDF_MC_Table extends FPDF {
         $y1     = 45;
         $this->SetXY( $r1, $y1);
         $this->Rect ($r1-2,42,89,40,'D');
-        $this->AddFont('Verdana');	
-        $this->SetFont('Arial','',10);		
+        $this->SetFont('LiberationSans','',10);		
         $this->MultiCell( 87, 4, $adresse,0,'L');
     }
 
@@ -706,19 +711,19 @@ class PDF_MC_Table extends FPDF {
         $this->Rect($r1, $y1, ($r2 - $r1), ($y2 - $y1), 2.5, 'D');
         $this->Line($r1, $y1 + 5, $r2, $y1 + 5);
         $this->SetXY($r1 + ($r2 - $r1) / 2 - 5, $y1 + 1);      
-        $this->SetFont("Arial", "B", 9);
+        $this->SetFont( "LiberationSans", "B", 9);
         $this->Cell(10, 4, ucfirst( $this->idioma->fix_html($this->idioma->forma_pago)), 0, 0, "C");   
         $salto = 4;
         $just = 'L';
         if ($numlineas < 3)
         {
-          $this->SetFont("Arial", "", 9);
+          $this->SetFont('LiberationSans','', 9);
           $this->SetXY($r1 + 3 , $y1 + 6);    
           $just = 'C';
         }
         else 
         {
-          $this->SetFont("Arial", "", 8);
+          $this->SetFont('LiberationSans','', 8);
           $this->SetXY($r1 + 3 , $y1 + 6);
         }
         if (($this->fdf_tipodocumento != 'Albaran' && $this->fdf_tipodocumento != 'Compra'))        
@@ -743,10 +748,10 @@ class PDF_MC_Table extends FPDF {
         $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 2.5, 'D');
         $this->Line( $r1, $mid, $r2, $mid);
         $this->SetXY( $r1 + ($r2 - $r1)/2 - 5 , $y1+1 );
-        $this->SetFont( "Arial", "B", 9);
+        $this->SetFont( "LiberationSans", "B", 9);
         $this->Cell(10,4, "DIVISA", 0, 0, "C");
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5 , $y1 + 5 );
-        $this->SetFont( "Arial", "", 9);
+        $this->SetFont('LiberationSans','', 9);
         $this->Cell(10,5,$divisa, 0,0, "C");
     }
 
@@ -761,10 +766,10 @@ class PDF_MC_Table extends FPDF {
         $this->RoundedRect($r1, $y1, ($r2 - $r1), ($y2-$y1), 2.5, 'D');
         $this->Line( $r1, $mid, $r2, $mid);
         $this->SetXY( $r1 + ($r2 - $r1)/2 - 5 , $y1+1 );
-        $this->SetFont( "Arial", "B", 9);		
+        $this->SetFont( "LiberationSans", "B", 9);		
         $this->Cell(10, 4, "PAIS", '', '', "C");
         $this->SetXY( $r1 + ($r2-$r1)/2 - 5 , $y1 + 5 );		
-        $this->SetFont( "Arial", "", 9);
+        $this->SetFont('LiberationSans','', 9);
         $this->Cell(10, 5, $pais, '', '', "C");
     }
 
@@ -776,14 +781,14 @@ class PDF_MC_Table extends FPDF {
         } else {
             $y1=258;
         }   
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "LiberationSans", "B", 8);
         $length = $this->GetStringWidth("Observaciones: " . $observa);
         $this->SetXY( 18, $y1/*$this->h - 37.5*/ );
         $texto = ucfirst( $this->idioma->fix_html($this->idioma->observaciones).': ');
         $this->Cell($length,0, $texto);
         $this->SetXY( 18, $y1+2/*$this->h - 37.5*/ );
         $this->SetFillColor(230,230,230);
-        $this->SetFont( "Arial", "I", 8);
+        $this->SetFont('LiberationSans','I', 8);
         $this->MultiCell(90,4, $observa,'0','L','true');
     }
 
@@ -798,7 +803,7 @@ class PDF_MC_Table extends FPDF {
             if (count($datos) > 3) 
             {
                 // Comentar o eliminar las siguientes 5 lineas para NO mostrar el error.
-                $this->SetFont( "Arial", "B", 10);
+                $this->SetFont( "LiberationSans", "B", 10);
                 $this->SetXY( $r1, $y1 + 8 );
                 $this->Cell(8,4, "ERROR: Localizadas ".count($datos)." lineas de ".FS_IVA."... ", 0, '', "L");
                 $this->SetXY( $r1, $y1 + 12 );
@@ -809,7 +814,7 @@ class PDF_MC_Table extends FPDF {
                     if ($i == 1) { $y2  = $y1 + 6; }
                     if ($i == 2) { $y2  = $y1 + 10; }
                     if ($i == 3) { $y2  = $y1 + 14; }		
-                    $this->SetFont( "Arial", "B", 6);
+                    $this->SetFont( "LiberationSans", "B", 6);
                     $this->SetXY( $r1, $y2 );
                     $this->Cell(8,4, $datos[$i][0], 0, '', "L");
                     $this->Cell(17,4, $datos[$i][1], 0, '', "R");
@@ -819,7 +824,7 @@ class PDF_MC_Table extends FPDF {
                     $this->Cell(18,4, $datos[$i][5], 0, '', "R");
                     $this->Cell(7,4, $datos[$i][6], 0, '', "R");
                     $this->Cell(18,4, $datos[$i][7], 0, '', "R");
-                    $this->SetFont( "Arial", "B", 6.5);		
+                    $this->SetFont( "LiberationSans", "B", 6.5);		
                     $this->Cell(24,4, $datos[$i][8], 0, '', "R");
                 }
             }
@@ -835,28 +840,28 @@ class PDF_MC_Table extends FPDF {
         $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1),'D');
         $this->Line( $r1+15,  $y1, $r1+15, $y2);
         $this->Line( $r1+15, $y1+4, $r2, $y1+4);
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "LiberationSans", "B", 8);
         $this->SetXY( $r1+22, $y1 );
         $this->Cell(30,4, $this->fdf_divisa, 0, 0, "C");
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "LiberationSans", "B", 8);
         $this->SetXY( $r1, $y1+7 );
         
         $this->Cell(15,4, mb_strtoupper($this->idioma->fix_html($this->idioma->neto)), 0, 0, "C");    
                 
         // Total Neto de la pagina
-        $this->SetFont( "Arial", "", 9);
+        $this->SetFont('LiberationSans','', 9);
         $this->SetXY( $r1+16, $y1+6.5 );
         $this->Cell(43,4, $this->neto, 0, 0, "C");
 
         // Suma y Sigue		
-        $this->SetFont( "Arial", "B", 6);
+        $this->SetFont( "LiberationSans", "B", 6);
         $this->SetXY( $r1+16, $y1+13 );
         $this->MultiCell(43,3,mb_strtoupper($this->idioma->fix_html($this->idioma->suma_sigue)),0,'C');
     }
 
     function addTotal()
     {
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "LiberationSans", "B", 8);
         $r1  = 18;
         $r2  = $r1 + 125;
         $y1  = 227;//$this->h - 30;
@@ -890,16 +895,16 @@ class PDF_MC_Table extends FPDF {
         $this->Rect($r1, $y1, ($r2 - $r1), ($y2-$y1), 'D');
         $this->Line( $r1+15,  $y1, $r1+15, $y2);
         $this->Line( $r1+15, $y1+4, $r2, $y1+4);
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "LiberationSans", "B", 8);
         $this->SetXY( $r1+18, $y1 );
         $this->Cell(30,4, $this->fdf_divisa, 0, 0, "C");
-        $this->SetFont( "Arial", "B", 8);
+        $this->SetFont( "LiberationSans", "B", 8);
         $this->SetXY( $r1, $y1+7 );
         $this->Cell(15,4, "TOTAL", 0, 0, "C");
         $this->SetLineWidth(0.1);
 
         // Total factura
-        $this->SetFont( "Arial", "B", 9);
+        $this->SetFont( "LiberationSans", "B", 9);
         $this->SetXY( $r1+12, $y1+6.5 );
         $this->Cell(43,4, $this->fdf_numtotal, 0, 0, "C");
    
@@ -915,7 +920,7 @@ class PDF_MC_Table extends FPDF {
         $mid = $y1 + (($y2-$y1) / 2);
         $texte  = ucfirst( $this->idioma->fix_html($this->idioma->transporte)) . ': ' . $agen;
         $this->SetXY($x1,$y2/*$h-41,5*/);
-        $this->SetFont( "Arial","B",9);
+        $this->SetFont( "LiberationSans", "B",9);
         $this->Cell(0,5,$texte,0,0,'L');
     }
     
@@ -927,7 +932,7 @@ class PDF_MC_Table extends FPDF {
         $x1 = 18;
         $y1 = 255;
 	$this->SetXY($x1,$y1/*$h-41,5*/);
-        $this->SetFont( "Arial","BU",9);
+        $this->SetFont( "LiberationSans", "BU",9);
         $this->Cell(0,5,$texte,0,0,'L');
     }
 
@@ -1101,7 +1106,7 @@ class PDF_MC_Table extends FPDF {
         $mid = $y1 + ($y2 / 2);
         $texte  = ucfirst( $this->idioma->fix_html($this->idioma->pedido_cliente)) . ": ".$ref; 
         $this->SetXY($this->w,28);
-        $this->SetFont( "Arial", "U", 9);
+        $this->SetFont( "LiberationSans", "U", 9);
         $this->Cell(0,4,$texte,0,0,'R');
     }    
 

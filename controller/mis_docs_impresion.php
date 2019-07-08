@@ -1290,7 +1290,7 @@ class mis_docs_impresion extends fs_controller
       $lineas = $this->pedido->get_lineas();
 
       $pdf_doc->SetTitle(ucfirst($this->idioma->compra).': '. $this->pedido->codigo)/*. " " . $this->factura->numero2)*/;
-      $pdf_doc->SetSubject(ucfirst($this->idioma->cliente).': '. utf8_decode($this->pedido->nombre));
+      $pdf_doc->SetSubject('Proveedor/Supplier: '. utf8_decode($this->pedido->nombre));
       $pdf_doc->SetAuthor($this->empresa->nombre);
       $pdf_doc->SetCreator('FacturaSctipts V_' . $this->version());
 
@@ -1927,7 +1927,7 @@ class mis_docs_impresion extends fs_controller
                }
             }
             
-            $mail->Subject = $this->empresa->nombre . ': Mi '.FS_PEDIDO.' '.$this->pedido->codigo;
+            $mail->Subject = $this->empresa->nombre . ': Nuestro/Our '.FS_PEDIDO.' '.$this->pedido->codigo;
             $mail->AltBody = $_POST['mensaje'];
             $mail->msgHTML( nl2br($_POST['mensaje']) );
             $mail->isHTML(TRUE);

@@ -149,14 +149,28 @@ class PDF_MC_Table extends FPDF {
 
         // Forma de Pago del presupuesto / pedido
         $this->addPago($this->fdf_epago);
-        
-        // Fecha salida pedido
-        if ($this->fdf_salida){
-            $this->addSalida($this->fdf_salida);
-        }  
-        // Agencia del envío
-        $this->addAgencia(utf8_decode($this->fdf_agencia));
 
+        if ($this->fdf_tipodocumento == 'Compra'){
+            $this->fdf_salida='';
+        }
+        else 
+        {        
+            // Fecha salida pedido
+            if ($this->fdf_salida){
+                $this->addSalida($this->fdf_salida);
+            }  
+        }
+        if ($this->fdf_tipodocumento == 'Compra'){
+            $this->fdf_agencia='DDP (Incoterms) - Portes pagados';
+            $this->addAgencia(utf8_decode($this->fdf_agencia));
+
+        }
+        else 
+        {        
+            // Agencia del envío
+            $this->addAgencia(utf8_decode($this->fdf_agencia));
+        }   
+        
         // Divisa de la Factura
         //$this->addDivisa(utf8_decode($this->fdf_divisa));
 

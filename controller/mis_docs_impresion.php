@@ -795,7 +795,7 @@ class mis_docs_impresion extends fs_controller
          $pdf_doc->fdf_divisa = $edivisa->descripcion;
       }
 
-      // Pais del presupuesto
+      // Pais de la proforma
       $pais = new pais();
       $epais = $pais->get($this->pedido->codpais);
       if ($epais) {
@@ -1340,8 +1340,10 @@ class mis_docs_impresion extends fs_controller
       
       // Tipo de Documento
       $pdf_doc->fdf_tipodocumento = 'Compra'; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
-      $pdf_doc->fdf_codigo = $this->pedido->codigo 
-      /*No sé para que lo usan . " " . $this->factura->numero2*/;
+      $pdf_doc->fdf_codigo = $this->pedido->codigo; 
+      $pdf_doc->fdf_numero2 = $this->pedido->numproveedor; 
+
+      /*No sé para que lo usan . " " . $this->factura->numero2*/
 
       // Fecha, Codigo proveedor y observaciones del pedido
       $pdf_doc->fdf_fecha = $this->pedido->fecha;
@@ -1369,11 +1371,11 @@ class mis_docs_impresion extends fs_controller
       if ($eprov) {
          $pdf_doc->fdc_telefono1 = $eprov->telefono1;
          $pdf_doc->fdc_telefono2 = $eprov->telefono2;
+         $pdf_doc->fdc_fax = $eprov->fax;
          $pdf_doc->fdc_email = $eprov->email;
          $pdf_doc->fdc_web = $eprov->web;
       }
-      
-      
+          
       $pdf_doc->fdf_epago = $pdf_doc->fdf_divisa = $pdf_doc->fdf_pais = '';
       
       // Forma de Pago del pedido
@@ -1386,20 +1388,14 @@ class mis_docs_impresion extends fs_controller
       if ($edivisa) {
          $pdf_doc->fdf_divisa = $edivisa->descripcion;
       }
-
-      // Pais de la Factura
+      
+      // Pais del presupuesto
       $pais = new pais();
-      $epais = $pais->get($this->pedido->codpais);
+      $epais = $pais->get($dir->codpais);
       if ($epais) {
          $pdf_doc->fdf_pais = $epais->nombre;
       }
-      
-      /*// Cabecera Titulos Columnas
-      $pdf_doc->Setdatoscab(array('ART.','DESCRIPCI'.chr(211).'N', 'CANT', 'PRECIO', 'DTO', 'NETO', 'IMPORTE'));
-      $pdf_doc->SetWidths(array(25, 83, 10, 20, 10, 20, 22));
-      $pdf_doc->SetAligns(array('L','L', 'R', 'R', 'R', 'R', 'R'));
-      $pdf_doc->SetColors(array('0|0|0','0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0', '0|0|0'));*/
-      
+            
       // Cabecera Titulos Columnas
       if($this->impresion['print_dto'])
       {
@@ -1470,22 +1466,22 @@ class mis_docs_impresion extends fs_controller
             $filaiva[$i][0] = $li['codimpuesto'];
             $etemp = round($li['neto'],2);
             $filaiva[$i][1] = ($etemp) ? $this->ckeckEuro($etemp) : '';
-            $totaliva = totaliva + $etemp; 
+            $totaliva = $totaliva + $etemp; 
             $filaiva[$i][2] = $li['iva']. "%";
             $etemp = round($li['totaliva'],2);
             $filaiva[$i][3] = ($etemp) ? $this->ckeckEuro($etemp) : '';
-            $totaliva = totaliva + $etemp;
+            $totaliva = $totaliva + $etemp;
             $filaiva[$i][4] = $li['recargo']. "%";
             $etemp = round($li['totalrecargo'],2);
             //if ($etemp =="0"){ $filaiva[$i][5] = ("000") ? $this->ckeckEuro("000") : '';}
             //else { $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : ''; }
             $filaiva[$i][5] = ($etemp) ? $this->ckeckEuro($etemp) : '';
-            $totaliva = totaliva + $etemp;
+            $totaliva = $totaliva + $etemp;
             $filaiva[$i][6] = ''; //// POR CREARRRRRR
             $filaiva[$i][7] = ''; //// POR CREARRRRRR
             $etemp = round($li['totallinea'],2);
             $filaiva[$i][8] = ($etemp) ? $this->ckeckEuro($etemp) : ''; 
-            $totaliva = totaliva + $etemp;
+            $totaliva = $totaliva + $etemp;
          }
          
          if($filaiva)
@@ -1503,7 +1499,7 @@ class mis_docs_impresion extends fs_controller
       $pdf_doc->fdf_numtotal = $this->ckeckEuro($etemp);
 
       // Total pedido numeros a texto
-      $pdf_doc->fdf_textotal = $this->factura->total;
+      $pdf_doc->fdf_textotal = $this->pedido->total;
 
       /// Agregamos la pagina inicial de la pedido
       $pdf_doc->AddPage();

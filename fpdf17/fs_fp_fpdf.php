@@ -119,7 +119,9 @@ class PDF_MC_Table extends FPDF {
 
         // Tipo de Documento y Numero
         $this->fact_dev($this->fdf_tipodocumento, $this->fdf_codigo);
-        if ($this->fdf_numero2){$this->addPedidocliente ($this->fdf_numero2);}
+        if ($this->fdf_numero2){
+            $this->addPedidocliente ($this->fdf_numero2);
+        }
 
         // Fecha factura y Codigo Cliente
         $this->addDate($this->fdf_fecha);
@@ -128,9 +130,13 @@ class PDF_MC_Table extends FPDF {
         $this->addPageNumber($this->PageNo().'/{nb}');
 
         // Datos del Cliente
-        $cliente  = $this->fdf_nombrecliente . "\n";		
-        $cliente .= $this->fdf_FS_CIFNIF . ": ";
-        $cliente .= $this->fdf_cifnif . "\n";
+        $cliente  = $this->fdf_nombrecliente . "\n";
+        if ($this->fdf_cifnif==NULL){
+            $cliente .= "\n";   
+        } else {
+            $cliente .= $this->fdf_FS_CIFNIF . ": ";
+            $cliente .= $this->fdf_cifnif . "\n";
+        }
         $cliente .= $this->fdf_direccion . "\n";
         $cliente .= $this->fdf_codpostal . " - ";
         $cliente .= $this->fdf_ciudad . " (".$this->fdf_provincia.")\n";

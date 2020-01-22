@@ -226,6 +226,7 @@ class mis_docs_impresion extends fs_controller
    {
        foreach($this->idioma->all() as $idi)
       {
+         //var_dump ($idi); exit();
          $fsext = new fs_extension();
          $fsext->name = 'imprimir_pedido_proveedor_' . $idi->codidioma;
          $fsext->from = __CLASS__;
@@ -1047,8 +1048,9 @@ class mis_docs_impresion extends fs_controller
       
       // Tipo de Documento
       $pdf_doc->fdf_tipodocumento = 'Oferta'; // (FACTURA, FACTURA PROFORMA, ¿ALBARAN, PRESUPUESTO?...)
-      $pdf_doc->fdf_codigo = $this->presupuesto->codigo 
-      /*Nosotros no usamos NUMERO2 aqui . " " . $this->factura->numero2*/;
+      $pdf_doc->fdf_codigo = $this->presupuesto->codigo; 
+      $pdf_doc->fdf_numero2 = $this->presupuesto->numero2;    
+      /*Nosotros no usamos NUMERO2 aqui . " " . $this->factura->numero2*/
 
       // Fecha, Codigo cliente y observaciones del presupuesto
       $pdf_doc->fdf_fecha = $this->presupuesto->fecha;

@@ -2006,8 +2006,19 @@ class mis_docs_impresion extends fs_controller
             {
                $mail->addReplyTo($_POST['de'], $mail->FromName);
             }
-            
-            $mail->addAddress($_POST['email'], $razonsocial);
+                        
+            /* Versión original 
+               $mail->addAddress($_POST['email'], $razonsocial);
+            */
+
+            /* Versión nueva */
+            $emails = explode(", ", $_POST['email']);
+
+               for($i = 0; $i < 2; $i++) {
+                   $mail->AddAddress($emails[$i]);
+                   echo $emails[$i];
+               }
+		 
             if($_POST['email_copia'])
             {
                if( isset($_POST['cco']) )

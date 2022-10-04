@@ -129,7 +129,7 @@ class PDF_MC_Table extends FPDF {
         $this->addClient($this->fdf_codcliente);
         $this->addPageNumber($this->PageNo().'/{nb}');
 
-        // Datos del Cliente
+        // Datos del Cliente fiscales
         $cliente  = $this->fdf_nombrecliente . "\n";
         if ($this->fdf_cifnif==NULL){
             $cliente .= "\n";   
@@ -144,8 +144,19 @@ class PDF_MC_Table extends FPDF {
         $cliente .= ucfirst( $this->idioma->fix_html($this->idioma->telefono)).': ' . $this->fdc_telefono1;
         if($this->fdc_telefono2) { $cliente .= " - " . $this->fdc_telefono2 . "\n"; } else { $cliente .= "\n"; }
         if($this->fdc_fax) { $cliente .= ucfirst($this->idioma->fix_html($this->idioma->fax)).': ' . $this->fdc_fax . "\n"; }
-        if($this->fdc_email) { $cliente .= ucfirst($this->idioma->fix_html($this->idioma->email)).': '. $this->fdc_email . "\n"; }		
-        $this->addClientAdresse(utf8_decode($cliente));		
+        if($this->fdc_email) { $cliente .= ucfirst($this->idioma->fix_html($this->idioma->email)).': '. $this->fdc_email . "\n"; }	
+	    $this->addClientAdresse(utf8_decode($cliente));	
+
+        // Datos cliente envío
+        if ($this->fdf_nombrecliente_env){
+            $cliente_env .= $this->fdf_nombrecliente_env . "\n";        
+            $cliente_env .= $this->fdf_direccion_env . "\n";
+            $cliente_env .= $this->fdf_codpostal_env . " - ";
+            $cliente_env .= $this->fdf_ciudad_env . " (".$this->fdf_provincia.")\n";
+            $cliente_env .= $this->fdf_pais_env . "\n";
+            $this->addClientEntrega(utf8_decode($cliente_env)); 
+        }       
+        	
 
         // Forma de Pago del presupuesto / pedido
         $this->addPago($this->fdf_epago);
@@ -559,28 +570,28 @@ class PDF_MC_Table extends FPDF {
         $x1 = 10;
         $y1 = 42;
 	  $altocuadro=40;
-        $this->SetXY(18,37);
+        $this->SetXY(18,33);
         $this->SetFont('LiberationSans','',10);
         $this->SetTextColor(0);
         $length = $this->GetStringWidth( $nom );
         $this->MultiCell(66,5,'Emisor: ');
-        $this->SetXY(18,42);
+        $this->SetXY(18,38);
         $this->SetFillColor(230,230,230);
         $this->MultiCell(82,$altocuadro,'',0,'R',1);
         $this->SetTextColor(0);
-        $this->SetXY(20,45);
+        $this->SetXY(20,41);
         $this->AddFont('LiberationSans','','LiberationSans-Regular.php');
         $this->SetFont('LiberationSans','B',12);
         $length = $this->GetStringWidth( $nom );
         $this->MultiCell(80,4,$nom,0,'L');
-        $this->SetXY(20,49);
+        $this->SetXY(20,45);
         $this->SetFont('LiberationSans','',10);
         $length = $this->GetStringWidth( $adresse );
         $this->MultiCell($length, 4, $adresse);
 
         if ($email != '')
         {
-            $this->SetXY(20,68);	
+            $this->SetXY(20,64);	
             $this->SetFont('LiberationSans','',9);
             $this->Write(5,ucfirst($this->idioma->email).': ');
             $this->SetTextColor(0,0,255);
@@ -591,7 +602,7 @@ class PDF_MC_Table extends FPDF {
 
         if ($web != '')
         {
-            $this->SetXY(20,72);
+            $this->SetXY(20,68);
             $this->SetFont('LiberationSans','',9);
             $this->Write(5,ucfirst($this->idioma->web).': ');
             $this->SetTextColor(0,0,255);
@@ -613,7 +624,7 @@ class PDF_MC_Table extends FPDF {
 	$texte  = '' . $num;       
                 
         $this->SetFont( "LiberationSans", "B", 15 );
-        $this->SetXY($this->w,14);
+        $this->SetXY($this->w,10);
         if ($libelle=="Albaran"){
             $libelle = utf8_decode(ucfirst( $this->idioma->fix_html($this->idioma->albaran)));
         } else if ($libelle=="Pedido"){
@@ -628,7 +639,7 @@ class PDF_MC_Table extends FPDF {
         }
         $this->Cell(0,6,$libelle,0,0,'R');
         $this->SetFont( "LiberationSans", "B", 12 );
-        $this->SetXY($this->w,19);
+        $this->SetXY($this->w,15);
         $this->Cell(0,6,$texte,0,0,'R');
     }
 
@@ -649,7 +660,7 @@ class PDF_MC_Table extends FPDF {
         {        
 	    $texte = ucfirst( $this->idioma->fix_html($this->idioma->pedido)) . ' ' . ucfirst( $this->idioma->fix_html($this->idioma->fecha)) .': '  . $date;    
         }
-        $this->SetXY($this->w,24);
+        $this->SetXY($this->w,20);
         $this->SetFont('LiberationSans','', 9 );
         $this->Cell(0,4,$texte,0,0,'R');
     }
@@ -682,7 +693,7 @@ class PDF_MC_Table extends FPDF {
             $texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->num_cliente))) .': ' . $ref;    
         }
 	
-        $this->SetXY($this->w,32);
+        $this->SetXY($this->w,28);
         $this->SetFont('LiberationSans','', 9);
         $this->Cell(0,4,$texte,0,0,'R');
     }
@@ -700,15 +711,38 @@ class PDF_MC_Table extends FPDF {
         $this->Cell(0,4,$texte,0,0,'R');
     }
 
-    // Cliente
+    // Cliente - Direccion fiscal
     function addClientAdresse( $adresse )
     {
         $r1     = $this->w - 97;
-        $y1     = 45;
+        $y1     = 38;
+        $this->SetXY($r1,33);
+        $this->SetFont('LiberationSans','',8);
+        $this->SetTextColor(0);
+        $this->MultiCell(66,5,'Fiscal: ');
         $this->SetXY( $r1, $y1);
-        $this->Rect ($r1-2,42,89,40,'D');
-        $this->SetFont('LiberationSans','',10);		
-        $this->MultiCell( 87, 4, $adresse,0,'L');
+// This is our cordinates for X and Y
+        // $this->Rect ($r1-2,42,89,40,'D');
+        $this->SetFont('LiberationSans','',9);		
+        $this->MultiCell( 87, 4, $adresse,1,'L');
+    }
+    // Cliente - Direccion entrega
+    function addClientEntrega( $adresse )
+    {
+        $r1     = $this->w - 97;
+        $y1     = 76;
+        $this->SetXY($r1,71);
+        $this->SetFont('LiberationSans','',8);
+        $this->SetTextColor(0);
+        if ($this->idioma->codidioma=="es_ES"){
+            $this->MultiCell(66,5,'Entrega en: ');
+        } else {
+            $this->MultiCell(66,5,'Delivery at: ');
+        }        
+        $this->SetXY( $r1, $y1);
+        // $this->Rect ($r1-2,70,89,40,'D');
+        $this->SetFont('LiberationSans','',9);      
+        $this->MultiCell( 87, 4, $adresse,1,'L');
     }
 
     // Forma de Pago - Modificado

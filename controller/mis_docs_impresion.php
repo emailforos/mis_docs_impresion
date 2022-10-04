@@ -38,7 +38,7 @@ require_model('proveedor.php');
 
 // Añadidos
 require_model('forma_pago.php');
-require_model('pais.php');
+#require_model('pais.php');
 require_model('cuenta_banco.php');
 require_model('cuenta_banco_cliente.php');
 require_model('agencia_transporte.php');
@@ -760,7 +760,7 @@ class mis_docs_impresion extends fs_controller
       $pdf_doc->fdf_codigo = $this->pedido->codigo;
       /*Nosotros no usamos NUMERO2 aqui . " " . $this->factura->numero2*/
 
-      // Fecha, Codigo cliente y observaciones del presupuesto
+      // Fecha, Codigo cliente y observaciones de la proforma
       $pdf_doc->fdf_fecha = $this->pedido->fecha;
       $pdf_doc->fdf_codcliente = $this->pedido->codcliente;
       $pdf_doc->fdf_observaciones = iconv("UTF-8", "CP1252", $this->idioma->fix_html($this->pedido->observaciones));
@@ -770,15 +770,32 @@ class mis_docs_impresion extends fs_controller
       $pdf_doc->fdf_nombrecliente = $this->idioma->fix_html($this->pedido->nombrecliente);
       $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
       $pdf_doc->fdf_cifnif = $this->pedido->cifnif;
-      $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->pedido->direccion);
-      $pdf_doc->fdf_codpostal = $this->pedido->codpostal;
-      $pdf_doc->fdf_ciudad = $this->pedido->ciudad;
-      $pdf_doc->fdf_provincia = $this->pedido->provincia;
       $pdf_doc->fdc_telefono1 = $this->cliente->telefono1;
       $pdf_doc->fdc_telefono2 = $this->cliente->telefono2;
       $pdf_doc->fdc_fax = $this->cliente->fax;
       $pdf_doc->fdc_email = $this->cliente->email;
-      
+      $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->pedido->direccion);
+      $pdf_doc->fdf_codpostal = $this->pedido->codpostal;
+      $pdf_doc->fdf_ciudad = $this->pedido->ciudad;
+      $pdf_doc->fdf_provincia = $this->pedido->provincia;
+      // Añadida dirección envío
+      if ($this->pedido->envio_direccion){
+         if ($this->pedido->envio_nombre!=NULL or $this->pedido->envio_apellidos!=NULL){
+            $pdf_doc->fdf_nombrecliente_env = $this->idioma->fix_html($this->pedido->envio_nombre).' '.$this->idioma->fix_html($this->pedido->envio_apellidos);
+         } else {
+            $pdf_doc->fdf_nombrecliente_env = $this->idioma->fix_html($this->pedido->nombrecliente);
+         }
+         $pdf_doc->fdf_direccion_env = $this->idioma->fix_html($this->pedido->envio_direccion);
+         $pdf_doc->fdf_codpostal_env = $this->pedido->envio_codpostal;
+         $pdf_doc->fdf_ciudad_env = $this->pedido->envio_ciudad;
+         $pdf_doc->fdf_provincia_env = $this->pedido->envio_provincia;
+         $pais = new pais();
+         $epais = $pais->get($this->pedido->envio_codpais);
+         if ($epais) {
+            $pdf_doc->fdf_pais_env= $epais->nombre;
+         }
+      }
+
       // Fecha salida pedido
       $pdf_doc->fdf_salida = $this->pedido->fechasalida;
       
@@ -1678,14 +1695,31 @@ class mis_docs_impresion extends fs_controller
       $pdf_doc->fdf_nombrecliente = $this->idioma->fix_html($this->pedido->nombrecliente);
       $pdf_doc->fdf_FS_CIFNIF = FS_CIFNIF;
       $pdf_doc->fdf_cifnif = $this->pedido->cifnif;
-      $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->pedido->direccion);
-      $pdf_doc->fdf_codpostal = $this->pedido->codpostal;
-      $pdf_doc->fdf_ciudad = $this->pedido->ciudad;
-      $pdf_doc->fdf_provincia = $this->pedido->provincia;
       $pdf_doc->fdc_telefono1 = $this->cliente->telefono1;
       $pdf_doc->fdc_telefono2 = $this->cliente->telefono2;
       $pdf_doc->fdc_fax = $this->cliente->fax;
       $pdf_doc->fdc_email = $this->cliente->email;
+      $pdf_doc->fdf_direccion = $this->idioma->fix_html($this->pedido->direccion);
+      $pdf_doc->fdf_codpostal = $this->pedido->codpostal;
+      $pdf_doc->fdf_ciudad = $this->pedido->ciudad;
+      $pdf_doc->fdf_provincia = $this->pedido->provincia;
+      // Añadida dirección envío
+      if ($this->pedido->envio_direccion){
+         if ($this->pedido->envio_nombre!=NULL or $this->pedido->envio_apellidos!=NULL){
+            $pdf_doc->fdf_nombrecliente_env = $this->idioma->fix_html($this->pedido->envio_nombre).' '.$this->idioma->fix_html($this->pedido->envio_apellidos);
+         } else {
+            $pdf_doc->fdf_nombrecliente_env = $this->idioma->fix_html($this->pedido->nombrecliente);
+         }
+         $pdf_doc->fdf_direccion_env = $this->idioma->fix_html($this->pedido->envio_direccion);
+         $pdf_doc->fdf_codpostal_env = $this->pedido->envio_codpostal;
+         $pdf_doc->fdf_ciudad_env = $this->pedido->envio_ciudad;
+         $pdf_doc->fdf_provincia_env = $this->pedido->envio_provincia;
+         $pais = new pais();
+         $epais = $pais->get($this->pedido->envio_codpais);
+         if ($epais) {
+            $pdf_doc->fdf_pais_env= $epais->nombre;
+         }
+      }
       
       // Fecha salida pedido
       $pdf_doc->fdf_salida = $this->pedido->fechasalida;
@@ -2006,9 +2040,9 @@ class mis_docs_impresion extends fs_controller
             {
                $mail->addReplyTo($_POST['de'], $mail->FromName);
             }
-                        
+            
             /* Versión original 
-               $mail->addAddress($_POST['email'], $razonsocial);
+               $mail->addAddress($_POST['email'], $this->cliente->razonsocial);
             */
 
             /* Versión nueva */
@@ -2018,7 +2052,7 @@ class mis_docs_impresion extends fs_controller
                    $mail->AddAddress($emails[$i]);
                    echo $emails[$i];
                }
-		 
+
             if($_POST['email_copia'])
             {
                if( isset($_POST['cco']) )

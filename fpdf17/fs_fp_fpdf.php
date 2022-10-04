@@ -1150,7 +1150,7 @@ class PDF_MC_Table extends FPDF {
         //
         return $xsub;
     }
-    //Añadida
+    //Añadido número pedido cliente.
     function addPedidocliente ( $ref)
     {
         $r1  = $this->w - 50;
@@ -1159,7 +1159,7 @@ class PDF_MC_Table extends FPDF {
         $y2  = $y1;
         $mid = $y1 + ($y2 / 2);
         $texte  = ucfirst( $this->idioma->fix_html($this->idioma->pedido_cliente)) . ": ".$ref; 
-        $this->SetXY($this->w,28);
+        $this->SetXY($this->w,24);
         $this->SetFont( "LiberationSans", "U", 9);
         $this->Cell(0,4,$texte,0,0,'R');
     }    

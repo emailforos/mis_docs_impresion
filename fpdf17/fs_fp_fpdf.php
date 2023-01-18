@@ -152,7 +152,7 @@ class PDF_MC_Table extends FPDF {
             $cliente_env .= $this->fdf_nombrecliente_env . "\n";        
             $cliente_env .= $this->fdf_direccion_env . "\n";
             $cliente_env .= $this->fdf_codpostal_env . " - ";
-            $cliente_env .= $this->fdf_ciudad_env . " (".$this->fdf_provincia.")\n";
+            $cliente_env .= $this->fdf_ciudad_env . " (".$this->fdf_provincia_env.")\n";
             $cliente_env .= $this->fdf_pais_env . "\n";
             $this->addClientEntrega(utf8_decode($cliente_env)); 
         }       

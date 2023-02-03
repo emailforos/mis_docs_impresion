@@ -73,8 +73,8 @@
                   </div>
                </div>
                <div class="form-group">
-                   <textarea class="form-control" name="mensaje" rows="6"><p>Estimado </p> <p>Adjunto le remitimos nuestro nuevo <b>{#FS_PEDIDO#} de compras {$fsc->pedido->codigo}.</b> </p> <p>Plazo deseado:<b>     </b> </p>
-<p>Le saluda atentamente,</p>{$fsc->empresa->email_config['mail_firma']}</textarea>
+                   <textarea class="form-control" name="mensaje" rows="6"><p>Estimado </p> <p>Adjunto te remitimos nuestro nuevo <b>{#FS_PEDIDO#} de compras {$fsc->pedido->codigo}.</b></p><p>Plazo deseado:<b>     </b></p><p>En caso de haber algún cambio, rogamos nos lo notifiquéis antes de 24h</p>
+<p>Te saluda atentamente,</p>{$fsc->empresa->email_config['mail_firma']}</textarea>
                   <p class="help-block">
                      <a href="index.php?page=admin_empresa#email">Editar la firma</a>
                   </p>

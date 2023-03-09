@@ -1560,6 +1560,14 @@ class mis_docs_impresion extends fs_controller
                $pneto = $this->ckeckEuro(($lineas[$i]->pvpunitario)*((100-$lineas[$i]->dtopor)/100));
                $pvptotal = $this->ckeckEuro($lineas[$i]->pvptotal);
             /*}*/
+            if($cantidad==0){
+               $cantidad = " ";
+               $pvpunitario = " ";
+               $dtopor = " ";
+               $pneto = " ";
+               $pvptotal = " ";
+            }
+
               
             $lafila = array(
                     '0' => utf8_decode($referencia),

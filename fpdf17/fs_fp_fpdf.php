@@ -981,8 +981,7 @@ class PDF_MC_Table extends FPDF {
     //Añadir fecha expedición pedido.
     function addSalida($fechasalida)
     {
-        $texte  = ucfirst( $this->idioma->fix_html($this->idioma->entrega)) . ': ' . $fechasalida;    
-        
+	$texte  = ucfirst( utf8_decode($this->idioma->fix_html($this->idioma->entrega))) . ': ' . $fechasalida;            
         $x1 = 18;
         $y1 = 255;
 	$this->SetXY($x1,$y1/*$h-41,5*/);

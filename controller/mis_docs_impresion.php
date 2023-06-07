@@ -2055,8 +2055,9 @@ class mis_docs_impresion extends fs_controller
 
             /* Versión nueva */
             $emails = explode(", ", $_POST['email']);
+	    $numemails = count($emails);
 
-               for($i = 0; $i < 2; $i++) {
+               for($i = 0; $i < $numemails; $i++) {
                    $mail->AddAddress($emails[$i]);
                    echo $emails[$i];
                }

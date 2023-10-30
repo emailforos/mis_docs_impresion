@@ -226,7 +226,6 @@ class mis_docs_impresion extends fs_controller
    {
        foreach($this->idioma->all() as $idi)
       {
-         //var_dump ($idi); exit();
          $fsext = new fs_extension();
          $fsext->name = 'imprimir_pedido_proveedor_' . $idi->codidioma;
          $fsext->from = __CLASS__;
@@ -1288,7 +1287,11 @@ class mis_docs_impresion extends fs_controller
 
          $pdf_doc->Output('tmp/' . FS_TMP_NAME . 'enviar/' . $archivo, 'F');
       } else {
-         $pdf_doc->Output('Oferta ' . $this->presupuesto->codigo . ' ' . utf8_decode($this->idioma->fix_html($this->presupuesto->nombrecliente)) . '.pdf','I');
+         if ($this->idioma->codidioma=="en_UK"){
+            $pdf_doc->Output('Quotation ' . $this->presupuesto->codigo . ' ' . utf8_decode($this->idioma->fix_html($this->presupuesto->nombrecliente)) . '.pdf','I');
+         } else {
+            $pdf_doc->Output('Oferta ' . $this->presupuesto->codigo . ' ' . utf8_decode($this->idioma->fix_html($this->presupuesto->nombrecliente)) . '.pdf','I');
+         }
       }
    }
   
@@ -2004,7 +2007,11 @@ class mis_docs_impresion extends fs_controller
       {         
          if($doc == 'presupuesto')
          {
-            $filename = 'presupuesto_'.$this->presupuesto->codigo.'.pdf';
+            if ($this->idioma->codidioma=="en_UK"){
+               $filename = 'quotation_'.$this->presupuesto->codigo.'.pdf';   
+            } else {
+               $filename = 'presupuesto_'.$this->presupuesto->codigo.'.pdf';
+            }
             $this->generar_pdf_presupuesto($filename);
             $razonsocial = $this->presupuesto->nombrecliente;
          }
@@ -2055,11 +2062,10 @@ class mis_docs_impresion extends fs_controller
 
             /* Versión nueva */
             $emails = explode(", ", $_POST['email']);
-	    $numemails = count($emails);
+	         $numemails = count($emails);
 
                for($i = 0; $i < $numemails; $i++) {
                    $mail->AddAddress($emails[$i]);
-                   echo $emails[$i];
                }
 
             if($_POST['email_copia'])
@@ -2073,21 +2079,33 @@ class mis_docs_impresion extends fs_controller
                   $mail->addCC($_POST['email_copia'], $razonsocial);
                }
             }
-            
             if($doc == 'presupuesto')
             {
-               $mail->Subject = $this->empresa->nombre . ': Oferta '.$this->presupuesto->codigo;
+               if($this->idioma->codidioma=="en_UK"){
+                  $mail->Subject = 'Quotation '.$this->presupuesto->codigo;
+               } else {
+                  $mail->Subject = 'Oferta '.$this->presupuesto->codigo;
+               }
+
             }
             if($doc == 'presupuesto_uk')
             {
                $mail->Subject = $this->empresa->nombre . ': Quotation '.$this->presupuesto->codigo;
             }
             if ($doc == 'proforma'){  
-                if ($this->pedido->numero2 != NULL){
-                    $mail->Subject = $this->empresa->nombre . ': Factura proforma ' . $this->pedido->codigo . ' de su pedido ' . $this->pedido->numero2;
-                } else {
-                $mail->Subject = $this->empresa->nombre . ': Factura proforma ' . $this->pedido->codigo;
-                }
+               if($this->idioma->codidioma=="en_UK"){
+                  if ($this->pedido->numero2 != NULL){
+                     $mail->Subject = 'Proforma Invoice ' . $this->pedido->codigo . ' of your order ' . $this->pedido->numero2;
+                  } else {
+                     $mail->Subject = 'Proforma Invoice ' . $this->pedido->codigo;
+                  }
+               } else {
+                  if ($this->pedido->numero2 != NULL){
+                     $mail->Subject = 'Factura proforma ' . $this->pedido->codigo . ' de su pedido ' . $this->pedido->numero2;
+                  } ekse {
+                  $mail->Subject = 'Factura proforma ' . $this->pedido->codigo;
+                  }
+               }
             }
             if ($doc == 'proforma_uk'){  
                 if ($this->pedido->numero2 != NULL){
